@@ -43,7 +43,7 @@ public class MaruVortex extends Activity {
 }
 class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	int score = 0;
-	Paint black = new Paint();
+	Paint whitePaint = new Paint();
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
 	long start;
 	private static final String LOG_TAG = "MaruVortex";
@@ -79,7 +79,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		t = SystemClock.elapsedRealtime();
 		_thread.setRunning(true);
 		_thread.start();
-		black.setColor(Color.BLACK);
+		whitePaint.setColor(Color.WHITE);
 
 	}
 	@Override
@@ -177,7 +177,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		}
 
 		canvas.drawBitmap(test, _x-test.getWidth()/2, _y-test.getHeight()/2, null);
-		canvas.drawText("Score: " + score, 50, 25, black);
+		canvas.drawText("Score: " + score, 50, 25, whitePaint);
 		t = nt;
 	}
 	@Override
