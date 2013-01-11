@@ -60,10 +60,11 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	private int bulletid = 0;
 	Matrix matrix = new Matrix();
 	Bitmap test = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-	Bitmap square = BitmapFactory.decodeResource(getResources(), R.drawable.square);
+	Bitmap enemy = BitmapFactory.decodeResource(getResources(), R.drawable.square);
 	Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bullet);
 	HashSet<Bullet> rms = new HashSet<Bullet>();
 	HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
+	private int bulletW, bulletH, enemyW, enemyH;
 	private int sq(int x){
 		return x*x;
 	}
@@ -80,6 +81,11 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		_thread.setRunning(true);
 		_thread.start();
 		whitePaint.setColor(Color.WHITE);
+		bulletW = bulletBitmap.getWidth();
+		bulletH = bulletBitmap.getHeight();
+		enemyW = enemy.getWidth();
+		enemyH = enemy.getHeight();
+		
 
 	}
 	@Override
@@ -135,7 +141,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		rms.clear();
 		rms2.clear();
 		for (Bullet i : bullets) {
-			for (BoxParticle j : squares){
+			for (BoxParticle j : squares) {
 				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
 				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
 				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
@@ -153,22 +159,22 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		for (BoxParticle i : squares) {
 			i.update(((double)(nt-t))/1000);
 
-			matrix.setRotate(i.getAngle(),square.getWidth()/2,square.getHeight()/2);
-			matrix.postTranslate(i.getx()-square.getWidth()/2, i.gety()-square.getHeight()/2);
+			matrix.setRotate(i.getAngle(),enemyW/2,enemyH/2);
+			matrix.postTranslate(i.getx()-enemyW/2, i.gety()-enemyH/2);
 
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
 
-			canvas.drawBitmap(square, matrix, aA);
+			canvas.drawBitmap(enemy, matrix, aA);
 
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
 			//Log.d(AVTAG, Double.toString(Math.atan2(canvas.getHeight()/2 - _y,  canvas.getWidth()/2 - _x)));
 		}
-		for(Bullet i : bullets){
+		for(Bullet i : bullets) {
 			i.update(((double)(nt-t))/1000);
 
 
-			matrix.setRotate(i.getAngle(),bulletBitmap.getWidth()/2,bulletBitmap.getHeight()/2);
-			matrix.postTranslate(i.getx()-bulletBitmap.getWidth()/2, i.gety()-bulletBitmap.getHeight()/2);
+			matrix.setRotate(i.getAngle(),bulletW/2,bulletH/2);
+			matrix.postTranslate(i.getx()-bulletW/2, i.gety()-bulletH/2);
 			//Log.d(AVTAG, ""+ i.getAngle());
 			//if (i.id==15)
 				//Log.d(AVTAG, "Position:" + i.getx() + " " + i.gety());
