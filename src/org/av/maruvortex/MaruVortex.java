@@ -39,17 +39,11 @@ public class MaruVortex extends Activity {
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_maru_vortex, menu);
-		return true;
-	}
 
 }
 class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	int score = 0;
-	Paint white = new Paint();
+	Paint black = new Paint();
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
 	long start;
 	private static final String LOG_TAG = "MaruVortex";
@@ -85,7 +79,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		t = SystemClock.elapsedRealtime();
 		_thread.setRunning(true);
 		_thread.start();
-		white.setColor(Color.WHITE);
+		black.setColor(Color.BLACK);
 
 	}
 	@Override
@@ -115,7 +109,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		if(canvas==null) return;
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
-		canvas.drawColor(Color.BLACK);
+		canvas.drawColor(Color.WHITE);
 		//canvas.drawBitmap(square, b.getx(), b.gety(), null);
 		if(nt-g >= 100) {
 			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, canvas.getHeight(), canvas.getWidth()));
@@ -183,7 +177,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		}
 
 		canvas.drawBitmap(test, _x-test.getWidth()/2, _y-test.getHeight()/2, null);
-		canvas.drawText("Score: " + score, 50, 25, white);
+		canvas.drawText("Score: " + score, 50, 25, black);
 		t = nt;
 	}
 	@Override
