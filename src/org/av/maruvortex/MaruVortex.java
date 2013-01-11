@@ -8,6 +8,7 @@ import java.math.*;
 import java.util.*;
 
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.app.Activity;
 import android.content.Context;
@@ -28,8 +29,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MaruVortex extends Activity {
-
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,7 +48,6 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	private static final String LOG_TAG = "MaruVortex";
 	long t = -1000, f = -1000, g = -100;
 	Paint _paint = new Paint();
-
 	Random r = new Random();
 	HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
 	HashSet<Bullet> bullets = new HashSet<Bullet>();
@@ -76,6 +74,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	@Override
 	public void surfaceCreated(SurfaceHolder arg0) {
 		start = SystemClock.elapsedRealtime();
+		setKeepScreenOn(true);
 		_paint.setColor(Color.WHITE);
 		t = SystemClock.elapsedRealtime();
 		_thread.setRunning(true);
