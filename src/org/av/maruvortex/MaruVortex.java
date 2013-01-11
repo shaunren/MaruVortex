@@ -109,7 +109,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		if(canvas==null) return;
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
-		canvas.drawColor(Color.WHITE);
+		canvas.drawColor(Color.BLACK);
 		//canvas.drawBitmap(square, b.getx(), b.gety(), null);
 		if(nt-g >= 100) {
 			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, canvas.getHeight(), canvas.getWidth()));
@@ -138,7 +138,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			for (BoxParticle j : squares){
 				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
 				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
-				if(Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety()))<=i.getRadius()+j.getRadius()) {
+				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
 
 					rms.add(i);
 					rms2.add(j);
@@ -154,7 +154,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			i.update(((double)(nt-t))/1000);
 
 			matrix.setRotate(i.getAngle(),square.getWidth()/2,square.getHeight()/2);
-			matrix.postTranslate(i.getx(), i.gety());
+			matrix.postTranslate(i.getx()-square.getWidth()/2, i.gety()-square.getHeight()/2);
 
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
 
@@ -168,7 +168,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 
 			matrix.setRotate(i.getAngle(),bulletBitmap.getWidth()/2,bulletBitmap.getHeight()/2);
-			matrix.postTranslate(i.getx(), i.gety());
+			matrix.postTranslate(i.getx()-bulletBitmap.getWidth()/2, i.gety()-bulletBitmap.getHeight()/2);
 			//Log.d(AVTAG, ""+ i.getAngle());
 			//if (i.id==15)
 				//Log.d(AVTAG, "Position:" + i.getx() + " " + i.gety());

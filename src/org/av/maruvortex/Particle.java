@@ -84,15 +84,15 @@ class BoxParticle extends Particle{
 
 	public BoxParticle(Random r, int h, int l) {
 		c = 40;
-		radius = 20;
+		radius = 11;
 		this.screenLength = l;
 		this.screenHeight = h;
 		int k = r.nextInt();
-		dir = Math.abs(k%4);
-		if (dir == 0){dx = 50; x = 0; y = k%h;} 
-		else if (dir == 1){dy = -50; x = k%l; y = h;}
-		else if (dir == 2){dx = -50; x = l; y = k%h;}
-		else if (dir == 3){dy = 50; x = k%l; y = 0;}
+		dir = r.nextInt(4);
+		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
 		angle = Math.atan2(dy, dx)*180/Math.PI;
 
 	}
