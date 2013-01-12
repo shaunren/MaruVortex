@@ -153,20 +153,21 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	}
 	@Override
 	public void onDraw (Canvas canvas){
-		if(berzerk){
+		if (canvas==null) return;
+		
+		if(berzerk) {
 			bitmapPaint = invert;
 			textPaint = blackPaint;
 			canvas.drawColor(Color.WHITE);
 		}
-		else{
-			bitmapPaint = null;
+		else {
+			bitmapPaint = aA;
 			textPaint = whitePaint;
 			canvas.drawColor(Color.BLACK);
 		}
 		
 		screenW = canvas.getWidth();
 		screenH = canvas.getHeight();
-		if(canvas==null) return;
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
 		//canvas.drawColor(Color.BLACK);
@@ -210,8 +211,6 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		
 		for (Bullet i : bullets) {
 			for (BoxParticle j : squares) {
-				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
-				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
 				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
 					rms.add(i);
 					rms2.add(j);
@@ -219,24 +218,13 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 				}
 
 			}
-		}
-
-		squares.removeAll(rms2);
-		for (Bullet i : bullets) {
 			for (ParabolicParticle j : parabolics) {
-				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
-				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
 				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
-
 					rms.add(i);
 					rms3.add(j);
 				    score++;
 				}
 			}
-		}
-
-		parabolics.removeAll(rms3);
-		for (Bullet i : bullets) {
 			for (TurningParticle j : turns) {
 				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
 				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
@@ -248,8 +236,9 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 				}
 			}
 		}
+		squares.removeAll(rms2);
+		parabolics.removeAll(rms3);
 		turns.removeAll(rms4);
-		
 		
 		bullets.removeAll(rms);
 		

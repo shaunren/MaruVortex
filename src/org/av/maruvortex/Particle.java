@@ -69,19 +69,6 @@ class Bullet extends Particle {
 		angle = Math.atan2(dy, dx)*180/Math.PI;
 		//Log.d("STUFF", "angle0: " + angle);
 	}
-	@Override
-	public void update(double dt){
-		double norm = Math.sqrt(dx*dx + dy*dy);
-		dx *= c/norm;
-		dy *= c/norm;
-		if (Math.abs(dx)<EPSILON) dx = 0;
-		if (Math.abs(dy)<EPSILON) dy = 0;
-		x += dx*dt;
-		y += dy*dt;
-		
-
-	}
-
 
 }
 class BoxParticle extends Particle{
@@ -149,7 +136,7 @@ class TurningParticle extends Particle{
 		if (dir == 1 || dir == 3)
 			dx+=10*Math.sin(t/25);
 		else
-			dy+=10*Math.sin(t/25);
+			dy+=10*Math.sin(t++/25);
 		double norm = Math.sqrt(dx*dx + dy*dy);
 		dx *= c/norm;
 		dy *= c/norm;
@@ -158,7 +145,7 @@ class TurningParticle extends Particle{
 		x += dx*dt;
 		y += dy*dt;
 		angle = Math.atan2(dy, dx)*180/Math.PI;
-		t++;
+
 	}
 
 }
