@@ -49,31 +49,48 @@ public class MaruVortex extends Activity  {
 
 }
 class Panel extends SurfaceView implements SurfaceHolder.Callback{
+	//GAME VARS
 	int level = 1;
 	int score = 0;
+	Random r = new Random();
+	
+	//PAINT VARS
 	Paint whitePaint = new Paint();
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
+	
+	//TIME VARS
 	long start;
-	private static final String LOG_TAG = "MaruVortex";
 	long t = -1000, f = -1000, g = -100; //f is square particle, g is bullet
-	Paint _paint = new Paint();
-	Random r = new Random();
+	
+	//PARTICLE CONTAINERS
 	HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
 	HashSet<Bullet> bullets = new HashSet<Bullet>();
 	HashSet<ParabolicParticle> parabolics = new HashSet<ParabolicParticle>();
-	private DrawThread _thread;
-	private int _x = 20;
-	private int _y = 20;
-	private int bulletid = 0;
-	Matrix matrix = new Matrix();
-	Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.mc);
-	Bitmap enemyBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.square);
-	Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bullet);
+	HashSet<TurningParticle> turns = new HashSet<TurningParticle>();
 	HashSet<Bullet> rms = new HashSet<Bullet>();
 	HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
 	HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
-	private int bulletW, bulletH, enemyW, enemyH;
+	HashSet<TurningParticle> rms4 = new HashSet<TurningParticle>();
+	private DrawThread _thread;
+	
+	//DEFAULT POSITION
+	private int _x = 20;
+	private int _y = 20;
+	
+	//BITMAP RELATED VARS
+	Matrix matrix = new Matrix();
+	Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.mc);
+	Bitmap squareBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.square);
+	Bitmap parabolicBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.parabolic);
+	Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bullet);
+	Bitmap turningBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.turning);
+	private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH, turningW, turningH;
 	private int screenW, screenH;
+	
+	//DEBUG TAGS
+	private static final String LOG_TAG = "MaruVortex";
+	
+	
 	private int sq(int x){
 		return x*x;
 	}
@@ -87,15 +104,18 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	public void surfaceCreated(SurfaceHolder arg0) {
 		start = SystemClock.elapsedRealtime();
 		setKeepScreenOn(true);
-		_paint.setColor(Color.WHITE);
 		t = SystemClock.elapsedRealtime();
 		_thread.setRunning(true);
 		_thread.start();
 		whitePaint.setColor(Color.WHITE);
 		bulletW = bulletBitmap.getWidth();
 		bulletH = bulletBitmap.getHeight();
-		enemyW = enemyBitmap.getWidth();
-		enemyH = enemyBitmap.getHeight();
+		squareW = squareBitmap.getWidth();
+		squareH = squareBitmap.getHeight();
+		parabolicW = parabolicBitmap.getWidth();
+		parabolicH = parabolicBitmap.getHeight();
+		turningW = turningBitmap.getWidth();
+		turningH = turningBitmap.getHeight();
 
 	}
 	@Override
@@ -130,33 +150,44 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
 		canvas.drawColor(Color.BLACK);
-		//canvas.drawBitmap(square, b.getx(), b.gety(), null);
+		
 		if(nt-g >= 100) {
-			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, screenH, screenW));
+			bullets.add(new Bullet(_x, _y, 100, 100, screenH, screenW));
 			g = nt;
 		}
 		if(nt-f >= 1000) {
 			if(level < 2)
 				squares.add(new BoxParticle(r, screenH, screenW));
-			else
+			else if(level < 3){
 				parabolics.add(new ParabolicParticle(r, screenH, screenW));
+				turns.add(new TurningParticle(r, screenH, screenW));
+			}
+			else
+				turns.add(new TurningParticle(r, screenH, screenW));
 			f = nt;
 		}
 
 		rms.clear();
 		rms2.clear();
+		rms3.clear();
+		rms4.clear();
 		for (Bullet i : bullets)
 			if (!i.onscreen()) rms.add(i);
 		for (BoxParticle i : squares)
 			if(!i.onscreen()) rms2.add(i);
 		for (ParabolicParticle i : parabolics)
 			if(!i.onscreen()) rms3.add(i);
+		for (TurningParticle i : turns)
+			if(!i.onscreen()) rms4.add(i);
 		bullets.removeAll(rms);
 		squares.removeAll(rms2);
 		parabolics.removeAll(rms3);
+		turns.removeAll(rms4);
 		rms.clear();
 		rms2.clear();
 		rms3.clear();
+		rms4.clear();
+		
 		for (Bullet i : bullets) {
 			for (BoxParticle j : squares) {
 				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
@@ -169,7 +200,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 			}
 		}
-		bullets.removeAll(rms);
+
 		squares.removeAll(rms2);
 		for (Bullet i : bullets) {
 			for (ParabolicParticle j : parabolics) {
@@ -183,30 +214,49 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 				}
 			}
 		}
+
+		parabolics.removeAll(rms3);
+		for (Bullet i : bullets) {
+			for (TurningParticle j : turns) {
+				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
+				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
+				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
+
+					rms.add(i);
+					rms4.add(j);
+				    score++;
+				}
+			}
+		}
+		turns.removeAll(rms4);
+		
+		
 		bullets.removeAll(rms);
-		squares.removeAll(rms2);
+		
+		
+		
 		for (BoxParticle i : squares) {
 			i.update(((double)(nt-t))/1000);
-			matrix.setRotate(i.getAngle(),enemyW/2,enemyH/2);
-			matrix.postTranslate(i.getx()-enemyW/2, i.gety()-enemyH/2);
+			matrix.setRotate(i.getAngle(),squareW/2,squareH/2);
+			matrix.postTranslate(i.getx()-squareW/2, i.gety()-squareH/2);
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
-			canvas.drawBitmap(enemyBitmap, matrix, aA);
+			canvas.drawBitmap(squareBitmap, matrix, aA);
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
 			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
 		for (ParabolicParticle i : parabolics) {
 			i.update(((double)(nt-t))/1000);
-
-			matrix.setRotate(i.getAngle(),enemyW/2,enemyH/2);
-			matrix.postTranslate(i.getx()-enemyW/2, i.gety()-enemyH/2);
-
-			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
-
-			canvas.drawBitmap(enemyBitmap, matrix, aA);
-
-			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
-			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
+			matrix.setRotate(i.getAngle(),parabolicW/2,parabolicH/2);
+			matrix.postTranslate(i.getx()-parabolicW/2, i.gety()-parabolicH/2);
+			canvas.drawBitmap(parabolicBitmap, matrix, aA);
 		}
+		for (TurningParticle i : turns) {
+			i.update(((double)(nt-t))/1000);
+			matrix.setRotate(i.getAngle(),turningW/2,turningH/2);
+			matrix.postTranslate(i.getx()-turningW/2, i.gety()-turningH/2);
+			canvas.drawBitmap(turningBitmap, matrix, aA);
+		}
+
 		for(Bullet i : bullets) {
 			i.update(((double)(nt-t))/1000);
 
@@ -225,7 +275,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			level = 2;
 		}
 		canvas.drawText("Score: " + score, 50, 25, whitePaint);
-		canvas.drawText("Level: " + level, screenW - 200, 25, whitePaint);
+		canvas.drawText("Level: " + level, screenW - 75, 25, whitePaint);
 		t = nt;
 	}
 	@Override
