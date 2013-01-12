@@ -8,6 +8,7 @@ import android.app.Activity;
 import java.util.*;
 import android.os.SystemClock;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -32,7 +33,7 @@ public class MaruVortex extends Activity  {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(new Panel(this));
-
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 	}
 
@@ -226,8 +227,6 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 				}
 			}
 			for (TurningParticle j : turns) {
-				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
-				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
 				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
 
 					rms.add(i);
@@ -248,10 +247,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			i.update(((double)(nt-t))/1000);
 			matrix.setRotate(i.getAngle(),squareW/2,squareH/2);
 			matrix.postTranslate(i.getx()-squareW/2, i.gety()-squareH/2);
-			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
 			canvas.drawBitmap(squareBitmap, matrix, bitmapPaint);
-			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
-			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
 		for (ParabolicParticle i : parabolics) {
 			i.update(((double)(nt-t))/1000);
@@ -272,11 +268,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 			matrix.setRotate(i.getAngle(),bulletW/2,bulletH/2);
 			matrix.postTranslate(i.getx()-bulletW/2, i.gety()-bulletH/2);
-			//Log.d(AVTAG, ""+ i.getAngle());
-			//if (i.id==15)
-				//Log.d(AVTAG, "Position:" + i.getx() + " " + i.gety());
 			canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
-			//Log.d(AVTAG,""+ i.getAngle());
 		}
 
 		canvas.drawBitmap(mcBitmap, _x-mcBitmap.getWidth()/2, _y-mcBitmap.getHeight()/2, bitmapPaint);
