@@ -2,8 +2,6 @@ package org.av.maruvortex;
 
 import java.util.Random;
 
-import android.util.Log;
-
 abstract public class Particle {
 	int radius;
 	double x, y, dx, dy, dt, angle;
@@ -138,10 +136,10 @@ class TurningParticle extends Particle{
 		this.screenLength = l;
 		this.screenHeight = h;
 		dir = r.nextInt(4);
-		if (dir == 0){dx = 50; dy = 50; x = 0; y = r.nextInt(h);} 
-		else if (dir == 1){dy = -50; dx = 50; x = r.nextInt(l); y = h;}
-		else if (dir == 2){dx = -50; dy = 50; x = l; y = r.nextInt(h);}
-		else if (dir == 3){dy = 50; dx = 50; x = r.nextInt(l); y = 0;}
+		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
 		angle = Math.atan2(dy, dx)*180/Math.PI;
 
 	}
@@ -149,11 +147,10 @@ class TurningParticle extends Particle{
 	public void update(double dt){
 
 		if (dir == 1 || dir == 3)
-			dx*=Math.sin(t/46);
+			dx+=10*Math.sin(t/25);
 		else
-			dy*=Math.sin(t/46);
+			dy+=10*Math.sin(t/25);
 		double norm = Math.sqrt(dx*dx + dy*dy);
-		Log.d("ACCEL", dy+" "+dx);
 		dx *= c/norm;
 		dy *= c/norm;
 		if (Math.abs(dx)<EPSILON) dx = 0;
