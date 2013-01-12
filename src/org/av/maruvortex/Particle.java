@@ -6,7 +6,7 @@ abstract public class Particle {
 	int radius;
 	double x, y, dx, dy, dt, angle;
 	int screenLength, screenHeight;
-	private static final double EPSILON = 0.00005;
+	public static final double EPSILON = 0.00005;
 	double c=4; 
 
 	public boolean onscreen() {
@@ -20,11 +20,13 @@ abstract public class Particle {
 		if (Math.abs(dy)<EPSILON) dy = 0;
 		x += dx*dt;
 		y += dy*dt;
+		angle = Math.atan2(dy, dx)*180/Math.PI;
 
 	}
 	public int getx() {
 		return (int)Math.round(x);
 	}
+
 	public int gety() {
 		return (int)Math.round(y);
 	}
@@ -40,15 +42,14 @@ abstract public class Particle {
 }
 
 class Bullet extends Particle {
-	int x0, y0, id;
+	int x0, y0;
 	int targetX, targetY;
 
 
 	private static final double EPSILON = 0.00005;
-	public Bullet(int id, int targetX, int targetY, int x0, int y0, int h, int l){
+	public Bullet(int targetX, int targetY, int x0, int y0, int h, int l){
 		c = 250;
 		radius = 4;
-		this.id = id;
 		this.targetX = targetX;
 		this.targetY = targetY;
 		this.x0 = x0;
@@ -70,11 +71,17 @@ class Bullet extends Particle {
 	}
 	@Override
 	public void update(double dt){
-
+		double norm = Math.sqrt(dx*dx + dy*dy);
+		dx *= c/norm;
+		dy *= c/norm;
+		if (Math.abs(dx)<EPSILON) dx = 0;
+		if (Math.abs(dy)<EPSILON) dy = 0;
 		x += dx*dt;
 		y += dy*dt;
+		
 
 	}
+
 
 }
 class BoxParticle extends Particle{
@@ -84,7 +91,7 @@ class BoxParticle extends Particle{
 
 	public BoxParticle(Random r, int h, int l) {
 		c = 40;
-		radius = 11;
+		radius = 13;
 		this.screenLength = l;
 		this.screenHeight = h;
 		dir = r.nextInt(4);
@@ -96,12 +103,11 @@ class BoxParticle extends Particle{
 
 	}
 	@Override
-	public void update(double dt) {
+	public void update(double dt){
 		x += dx*dt;
 		y += dy*dt;
-
-
 	}
+
 }
 class ParabolicParticle extends Particle{
 	int dir;
@@ -111,16 +117,48 @@ class ParabolicParticle extends Particle{
 		this.screenLength = l;
 		this.screenHeight = h;
 		dir = r.nextInt(4);
-		if (dir == 0){dy = 50; dx = 25; x = 0; y = r.nextInt(h);} 
-		else if (dir == 1){dx = 50; dy = -25; x = r.nextInt(l); y = h;}
-		else if (dir == 2){dy = 50; dx = -25; x = l; y = r.nextInt(h);}
-		else if (dir == 3){dx = 50; dy = 25; x = r.nextInt(l); y = 0;}
+		if (dir == 0){dy = 70; dx = 20; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dx = 70; dy = -20; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dy = 70; dx = -20; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dx = 70; dy = 20; x = r.nextInt(l); y = 0;}
+		angle = Math.atan2(dy, dx)*180/Math.PI;
+
+	}
+
+}
+
+class TurningParticle extends Particle{
+	int dir;
+	int t;
+	public TurningParticle(Random r, int h, int l) {
+		c = 40;
+		radius = 13;
+		this.screenLength = l;
+		this.screenHeight = h;
+		dir = r.nextInt(4);
+		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
 		angle = Math.atan2(dy, dx)*180/Math.PI;
 
 	}
 	@Override
 	public void update(double dt){
+
+		if (dir == 1 || dir == 3)
+			dx*=Math.sin(t/46);
+		else
+			dy*=Math.sin(t/46);
+		double norm = Math.sqrt(dx*dx + dy*dy);
+		dx *= c/norm;
+		dy *= c/norm;
+		if (Math.abs(dx)<EPSILON) dx = 0;
+		if (Math.abs(dy)<EPSILON) dy = 0;
 		x += dx*dt;
 		y += dy*dt;
+		angle = Math.atan2(dy, dx)*180/Math.PI;
+		t++;
 	}
+
 }
