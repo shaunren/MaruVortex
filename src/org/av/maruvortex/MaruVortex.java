@@ -123,6 +123,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	}
 	@Override
 	public void onDraw (Canvas canvas){
+		
 		screenW = canvas.getWidth();
 		screenH = canvas.getHeight();
 		if(canvas==null) return;
@@ -135,19 +136,17 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			g = nt;
 		}
 		if(nt-f >= 1000) {
-			squares.add(new BoxParticle(r, screenH, screenW));
-			parabolics.add(new ParabolicParticle(r, screenH, screenW));
+			if(level < 2)
+				squares.add(new BoxParticle(r, screenH, screenW));
+			else
+				parabolics.add(new ParabolicParticle(r, screenH, screenW));
 			f = nt;
 		}
-		if(nt-f >= 1000) {
-			parabolics.add(new ParabolicParticle(r, screenH, screenW));
-			f = nt;
-		}
+
 		rms.clear();
 		rms2.clear();
 		for (Bullet i : bullets)
 			if (!i.onscreen()) rms.add(i);
-
 		for (BoxParticle i : squares)
 			if(!i.onscreen()) rms2.add(i);
 		for (ParabolicParticle i : parabolics)
@@ -222,7 +221,11 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		}
 
 		canvas.drawBitmap(mcBitmap, _x-mcBitmap.getWidth()/2, _y-mcBitmap.getHeight()/2, null);
+		if(score >= 10){
+			level = 2;
+		}
 		canvas.drawText("Score: " + score, 50, 25, whitePaint);
+		canvas.drawText("Level: " + level, screenW - 200, 25, whitePaint);
 		t = nt;
 	}
 	@Override
