@@ -87,7 +87,6 @@ class BoxParticle extends Particle{
 		radius = 11;
 		this.screenLength = l;
 		this.screenHeight = h;
-		int k = r.nextInt();
 		dir = r.nextInt(4);
 		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
 		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
@@ -104,4 +103,24 @@ class BoxParticle extends Particle{
 
 	}
 }
+class ParabolicParticle extends Particle{
+	int dir;
+	public ParabolicParticle(Random r, int h, int l) {
+		c = 40;
+		radius = 11;
+		this.screenLength = l;
+		this.screenHeight = h;
+		dir = r.nextInt(4);
+		if (dir == 0){dy = 50; dx = 25; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dx = 50; dy = -25; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dy = 50; dx = -25; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dx = 50; dy = 25; x = r.nextInt(l); y = 0;}
+		angle = Math.atan2(dy, dx)*180/Math.PI;
 
+	}
+	@Override
+	public void update(double dt){
+		x += dx*dt;
+		y += dy*dt;
+	}
+}
