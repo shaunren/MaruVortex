@@ -83,13 +83,14 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	private int _y = 20;
 	private int bulletid = 0;
 	Matrix matrix = new Matrix();
-	Bitmap test = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-	Bitmap enemy = BitmapFactory.decodeResource(getResources(), R.drawable.square);
+	Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.mc);
+	Bitmap enemyBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.square);
 	Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bullet);
 	HashSet<Bullet> rms = new HashSet<Bullet>();
 	HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
 	HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
 	private int bulletW, bulletH, enemyW, enemyH;
+	private int screenW, screenH;
 	private int sq(int x){
 		return x*x;
 	}
@@ -109,9 +110,8 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		whitePaint.setColor(Color.WHITE);
 		bulletW = bulletBitmap.getWidth();
 		bulletH = bulletBitmap.getHeight();
-		enemyW = enemy.getWidth();
-		enemyH = enemy.getHeight();
-		
+		enemyW = enemyBitmap.getWidth();
+		enemyH = enemyBitmap.getHeight();
 
 	}
 	@Override
@@ -132,6 +132,8 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 		super(context);
 		getHolder().addCallback(this);
+		screenW = this.getWidth();
+		screenH = this.getHeight();
 		_thread = new DrawThread(getHolder(), this);
 		setFocusable(true);
 		// TODO Auto-generated constructor stub
@@ -144,17 +146,17 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		canvas.drawColor(Color.BLACK);
 		//canvas.drawBitmap(square, b.getx(), b.gety(), null);
 		if(nt-g >= 100) {
-			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, canvas.getHeight(), canvas.getWidth()));
+			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, screenH, screenW));
 			g = nt;
 		}
 
 		if(nt-f >= 1000) {
-			squares.add(new BoxParticle(r, canvas.getHeight(), canvas.getWidth()));
-			parabolics.add(new ParabolicParticle(r, canvas.getHeight(), canvas.getWidth()));
+			squares.add(new BoxParticle(r, screenH, screenW));
+			parabolics.add(new ParabolicParticle(r, screenH, screenW));
 			f = nt;
 		}
 		if(nt-f >= 1000) {
-			parabolics.add(new ParabolicParticle(r, canvas.getHeight(), canvas.getWidth()));
+			parabolics.add(new ParabolicParticle(r, screenH, screenW));
 			f = nt;
 		}
 
@@ -216,10 +218,10 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
 
-			canvas.drawBitmap(enemy, matrix, aA);
+			canvas.drawBitmap(enemyBitmap, matrix, aA);
 
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
-			//Log.d(AVTAG, Double.toString(Math.atan2(canvas.getHeight()/2 - _y,  canvas.getWidth()/2 - _x)));
+			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
 		for (ParabolicParticle i : parabolics) {
 			i.update(((double)(nt-t))/1000);
@@ -229,10 +231,10 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
 
-			canvas.drawBitmap(enemy, matrix, aA);
+			canvas.drawBitmap(enemyBitmap, matrix, aA);
 
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
-			//Log.d(AVTAG, Double.toString(Math.atan2(canvas.getHeight()/2 - _y,  canvas.getWidth()/2 - _x)));
+			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
 		for(Bullet i : bullets) {
 			i.update(((double)(nt-t))/1000);
@@ -247,7 +249,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			//Log.d(AVTAG,""+ i.getAngle());
 		}
 
-		canvas.drawBitmap(test, _x-test.getWidth()/2, _y-test.getHeight()/2, null);
+		canvas.drawBitmap(mcBitmap, _x-mcBitmap.getWidth()/2, _y-mcBitmap.getHeight()/2, null);
 		canvas.drawText("Score: " + score, 50, 25, whitePaint);
 		t = nt;
 	}
