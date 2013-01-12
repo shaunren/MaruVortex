@@ -2,49 +2,32 @@ package org.av.maruvortex;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.view.Menu;
 
-import java.math.*;
+
+
 import java.util.*;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.Bundle;
-import android.os.PowerManager;
 import android.os.SystemClock;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.util.Log;
-import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TextView;
-import android.hardware.*;
-
-
- 
 
 
 
 public class MaruVortex extends Activity  {
-	private SensorManager sensorManager;
+
 	boolean accelerometerAvailable = false;
     boolean isEnabled = false;
     float x, y, z;
 		
-	private boolean mInitialized;
 
 	
 	@Override
@@ -66,18 +49,18 @@ public class MaruVortex extends Activity  {
 
 }
 class Panel extends SurfaceView implements SurfaceHolder.Callback{
+	int level = 1;
 	int score = 0;
 	Paint whitePaint = new Paint();
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
 	long start;
 	private static final String LOG_TAG = "MaruVortex";
-	long t = -1000, f = -1000, g = -100;
+	long t = -1000, f = -1000, g = -100; //f is square particle, g is bullet
 	Paint _paint = new Paint();
 	Random r = new Random();
 	HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
 	HashSet<Bullet> bullets = new HashSet<Bullet>();
 	HashSet<ParabolicParticle> parabolics = new HashSet<ParabolicParticle>();
-	//BoxParticle b = new BoxParticle(r, 400, 400);
 	private DrawThread _thread;
 	private int _x = 20;
 	private int _y = 20;
@@ -94,6 +77,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	private int sq(int x){
 		return x*x;
 	}
+	
 	@Override
 	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
 		// TODO Auto-generated method stub
@@ -132,14 +116,15 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 
 		super(context);
 		getHolder().addCallback(this);
-		screenW = this.getWidth();
-		screenH = this.getHeight();
+
 		_thread = new DrawThread(getHolder(), this);
 		setFocusable(true);
 		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public void onDraw (Canvas canvas){
+		screenW = canvas.getWidth();
+		screenH = canvas.getHeight();
 		if(canvas==null) return;
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
@@ -149,7 +134,6 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			bullets.add(new Bullet(bulletid++, _x, _y, 100, 100, screenH, screenW));
 			g = nt;
 		}
-
 		if(nt-f >= 1000) {
 			squares.add(new BoxParticle(r, screenH, screenW));
 			parabolics.add(new ParabolicParticle(r, screenH, screenW));
@@ -159,11 +143,8 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			parabolics.add(new ParabolicParticle(r, screenH, screenW));
 			f = nt;
 		}
-
-
 		rms.clear();
 		rms2.clear();
-
 		for (Bullet i : bullets)
 			if (!i.onscreen()) rms.add(i);
 
@@ -171,7 +152,6 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			if(!i.onscreen()) rms2.add(i);
 		for (ParabolicParticle i : parabolics)
 			if(!i.onscreen()) rms3.add(i);
-
 		bullets.removeAll(rms);
 		squares.removeAll(rms2);
 		parabolics.removeAll(rms3);
@@ -183,14 +163,12 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 				//Log.d(AVTAG, i.getx() + " " + i.gety() + " " + j.getx() + " " + j.gety());
 				//Log.d(AVTAG, Math.sqrt(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())) + " " + (i.getRadius()+j.getRadius()));
 				if(sq(i.getx()-j.getx())+sq(i.gety()-j.gety())<=sq(i.getRadius()+j.getRadius())) {
-
 					rms.add(i);
 					rms2.add(j);
 				    score++;
 				}
 
 			}
-
 		}
 		bullets.removeAll(rms);
 		squares.removeAll(rms2);
@@ -204,22 +182,16 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 					rms3.add(j);
 				    score++;
 				}
-
 			}
-
 		}
 		bullets.removeAll(rms);
 		squares.removeAll(rms2);
 		for (BoxParticle i : squares) {
 			i.update(((double)(nt-t))/1000);
-
 			matrix.setRotate(i.getAngle(),enemyW/2,enemyH/2);
 			matrix.postTranslate(i.getx()-enemyW/2, i.gety()-enemyH/2);
-
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
-
 			canvas.drawBitmap(enemyBitmap, matrix, aA);
-
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
 			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
@@ -286,7 +258,6 @@ class DrawThread extends Thread{
 			finally {
 				if(c != null)
 					_surfaceHolder.unlockCanvasAndPost(c);
-
 			}
 		}
 	}
