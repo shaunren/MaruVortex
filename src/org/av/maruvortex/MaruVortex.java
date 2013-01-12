@@ -12,6 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.view.MotionEvent;
@@ -23,29 +25,16 @@ import android.view.WindowManager;
 
 
 public class MaruVortex extends Activity  {
-
-	boolean accelerometerAvailable = false;
-    boolean isEnabled = false;
-    float x, y, z;
-		
-
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		
 		setContentView(new Panel(this));
-		/*
-		sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
-		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		*/
+
 
 	}
-
-
 
 }
 class Panel extends SurfaceView implements SurfaceHolder.Callback{
@@ -53,11 +42,26 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	int level = 1;
 	int score = 0;
 	Random r = new Random();
+	boolean berzerk = false;
 	
 	//PAINT VARS
+	Paint blackPaint = new Paint();
 	Paint whitePaint = new Paint();
+	Paint textPaint;
+
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
+	Paint invert = new Paint();
+	float mx[] =
+		{
+		-1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
+		0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 
+		0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+		};
 	
+	Paint bitmapPaint;
+
+
 	//TIME VARS
 	long start;
 	long t = -1000, f = -1000, g = -100; //f is square particle, g is bullet
@@ -87,6 +91,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH, turningW, turningH;
 	private int screenW, screenH;
 	
+	
 	//DEBUG TAGS
 	private static final String LOG_TAG = "MaruVortex";
 	
@@ -108,6 +113,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		_thread.setRunning(true);
 		_thread.start();
 		whitePaint.setColor(Color.WHITE);
+		blackPaint.setColor(Color.BLACK);
 		bulletW = bulletBitmap.getWidth();
 		bulletH = bulletBitmap.getHeight();
 		squareW = squareBitmap.getWidth();
@@ -116,6 +122,10 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		parabolicH = parabolicBitmap.getHeight();
 		turningW = turningBitmap.getWidth();
 		turningH = turningBitmap.getHeight();
+		ColorMatrix cm = new ColorMatrix(mx);
+		invert.setColorFilter(new ColorMatrixColorFilter(cm));
+		invert.setFlags(Paint.ANTI_ALIAS_FLAG);
+		
 
 	}
 	@Override
@@ -143,13 +153,23 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	}
 	@Override
 	public void onDraw (Canvas canvas){
+		if(berzerk){
+			bitmapPaint = invert;
+			textPaint = blackPaint;
+			canvas.drawColor(Color.WHITE);
+		}
+		else{
+			bitmapPaint = null;
+			textPaint = whitePaint;
+			canvas.drawColor(Color.BLACK);
+		}
 		
 		screenW = canvas.getWidth();
 		screenH = canvas.getHeight();
 		if(canvas==null) return;
 		long nt = SystemClock.elapsedRealtime();
 		if (t < 0) t=nt;
-		canvas.drawColor(Color.BLACK);
+		//canvas.drawColor(Color.BLACK);
 		
 		if(nt-g >= 100) {
 			bullets.add(new Bullet(_x, _y, 100, 100, screenH, screenW));
@@ -240,7 +260,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			matrix.setRotate(i.getAngle(),squareW/2,squareH/2);
 			matrix.postTranslate(i.getx()-squareW/2, i.gety()-squareH/2);
 			//Log.d(AVTAG, "Position: " + i.getx() + ", " + i.gety());
-			canvas.drawBitmap(squareBitmap, matrix, aA);
+			canvas.drawBitmap(squareBitmap, matrix, bitmapPaint);
 			//canvas.drawBitmap(square, i.getx()-testWidth>>1, i.gety()-testHeight>>1, null);				
 			//Log.d(AVTAG, Double.toString(Math.atan2(screenH/2 - _y,  screenW/2 - _x)));
 		}
@@ -248,13 +268,13 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			i.update(((double)(nt-t))/1000);
 			matrix.setRotate(i.getAngle(),parabolicW/2,parabolicH/2);
 			matrix.postTranslate(i.getx()-parabolicW/2, i.gety()-parabolicH/2);
-			canvas.drawBitmap(parabolicBitmap, matrix, aA);
+			canvas.drawBitmap(parabolicBitmap, matrix, bitmapPaint);
 		}
 		for (TurningParticle i : turns) {
 			i.update(((double)(nt-t))/1000);
 			matrix.setRotate(i.getAngle(),turningW/2,turningH/2);
 			matrix.postTranslate(i.getx()-turningW/2, i.gety()-turningH/2);
-			canvas.drawBitmap(turningBitmap, matrix, aA);
+			canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
 		}
 
 		for(Bullet i : bullets) {
@@ -266,18 +286,23 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 			//Log.d(AVTAG, ""+ i.getAngle());
 			//if (i.id==15)
 				//Log.d(AVTAG, "Position:" + i.getx() + " " + i.gety());
-			canvas.drawBitmap(bulletBitmap, matrix, aA);
+			canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
 			//Log.d(AVTAG,""+ i.getAngle());
 		}
 
-		canvas.drawBitmap(mcBitmap, _x-mcBitmap.getWidth()/2, _y-mcBitmap.getHeight()/2, null);
+		canvas.drawBitmap(mcBitmap, _x-mcBitmap.getWidth()/2, _y-mcBitmap.getHeight()/2, bitmapPaint);
 		if(score >= 10){
 			level = 2;
 		}
-		canvas.drawText("Score: " + score, 50, 25, whitePaint);
-		canvas.drawText("Level: " + level, screenW - 75, 25, whitePaint);
+		canvas.drawText("Score: " + score, 50, 25, textPaint);
+		canvas.drawText("Level: " + level, screenW - 75, 25, textPaint);
+		
+		
+		
 		t = nt;
+		
 	}
+
 	@Override
 	public boolean onTouchEvent (MotionEvent event){
 		_x = (int) event.getX();
@@ -289,6 +314,7 @@ class DrawThread extends Thread{
 	private SurfaceHolder _surfaceHolder;
 	private Panel _panel;
 	private boolean _run = false;
+	Bitmap screen = Bitmap.createBitmap(800, 480, Bitmap.Config.ARGB_8888);
 	public DrawThread(SurfaceHolder surfaceHolder, Panel panel){
 		_surfaceHolder = surfaceHolder;
 		_panel = panel;
@@ -299,7 +325,7 @@ class DrawThread extends Thread{
 	}
 	@Override
 	public void run() {
-		Canvas c;
+		Canvas c = null;
 		while(_run) {
 			c = null;
 			try {
