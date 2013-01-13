@@ -52,8 +52,10 @@ class Character extends Particle {
     public void updateOrientation(double pitch, double roll) {
 	pitch /= -30;
 	roll = (-25-roll)/15;
-	if (Math.abs(pitch)<=1) dx = pitch*w;
-	if (Math.abs(roll)<=1) dy = roll*h;
+	if (Math.abs(pitch)<=1) dx = Math.signum(pitch)*Math.pow(Math.abs(pitch), 1.2)*w;
+	//if (dx < 1) dx = 0;
+	if (Math.abs(roll)<=1) dy = Math.signum(roll)*Math.pow(Math.abs(roll), 1.2)*h;
+	//if (dy < 1) dy = 0;
     }
     public void update(double dt) {
 	x += dx*dt;

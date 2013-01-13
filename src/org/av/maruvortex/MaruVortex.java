@@ -255,7 +255,6 @@ public class MaruVortex extends Activity {
 		roll = (float) Math.toDegrees(prefValues[2]);
 		if (mc != null)
 		    mc.updateOrientation(pitch, roll);
-		//Log.d(LOG_TAG, "Z = " + azimuth + ", pitch (Y) = " + Math.toDegrees(prefValues[1]) + ", roll (X) = " + Math.toDegrees(prefValues[2]));
 	    }
 	}
 
@@ -316,8 +315,7 @@ public class MaruVortex extends Activity {
 
 		for (Bullet i : bullets) {
 		    for (BoxParticle j : squares) {
-			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-				.getRadius() + j.getRadius())) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms2.add(j);
 			    score++;
@@ -325,17 +323,14 @@ public class MaruVortex extends Activity {
 
 		    }
 		    for (ParabolicParticle j : parabolics) {
-			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-				.getRadius() + j.getRadius())) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms3.add(j);
 			    score++;
 			}
 		    }
 		    for (TurningParticle j : turns) {
-			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-				.getRadius() + j.getRadius())) {
-
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms4.add(j);
 			    score++;
