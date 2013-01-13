@@ -49,17 +49,19 @@ class Character extends Particle {
 	dx = dy = 0;
 	radius = 10;
     }
-    public void updateOrientation(float pitch, float roll) {
-	if (Math.abs(pitch)<=45) dx = -pitch*10;
-	if (roll >= -40 && roll <= -10) dy = (-roll-25)*15;
+    public void updateOrientation(double pitch, double roll) {
+	pitch /= -30;
+	roll = (-25-roll)/15;
+	if (Math.abs(pitch)<=1) dx = pitch*w;
+	if (Math.abs(roll)<=1) dy = roll*h;
     }
     public void update(double dt) {
 	x += dx*dt;
 	y += dy*dt;
-	if (x < 0) x = 0;
-	else if (x > w) x = w;
-	if (y < 0) y = 0;
-	else if (y > h) y = h;
+	if (x < radius) x = radius;
+	else if (x > w-radius) x = w-radius;
+	if (y < radius) y = radius;
+	else if (y > h-radius) y = h-radius;
 	angle = Math.toDegrees(Math.atan2(dy, dx));
     }
 }

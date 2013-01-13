@@ -15,6 +15,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -58,11 +59,14 @@ public class MaruVortex extends Activity {
     }
 
     class Panel extends SurfaceView implements SurfaceHolder.Callback,
-	    SensorEventListener {
+    SensorEventListener {
 	// GAME VARS
-	int level = 1;
-	int score = 0;
-	Random r = new Random();
+	private int level = 1;
+	private int score = 0;
+	private boolean over = false;
+	private static final String OVER_STR = "GAME OVER";
+	private static final String OVER_STR_2 = "TOUCH TO RESTART";
+	private Random r = new Random();
 
 	private Sensor mAccel, mCompass;
 	private boolean sensorsReady = false;
@@ -79,8 +83,9 @@ public class MaruVortex extends Activity {
 
 	// PAINT VARS
 	Paint redPaint = new Paint();
-	Paint blackPaint = new Paint();
-	Paint whitePaint = new Paint();
+	Paint blackTextPaint = new Paint();
+	Paint whiteTextPaint = new Paint();
+	Paint largeTextPaint = new Paint();
 	Paint textPaint;
 
 	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -93,9 +98,8 @@ public class MaruVortex extends Activity {
 
 	// TIME VARS
 	// long start;
-	long t = -1000, f = -1000, g = -100; // f is square particle, g is
-					     // bullet
-	
+	long t = -1000, f = -1000, g = -1000; // f is square particle, g is bullet
+
 
 	Character mc = null;
 	// PARTICLE CONTAINERS
@@ -112,7 +116,7 @@ public class MaruVortex extends Activity {
 	// TOUCH LOCATION
 	private int _x = 20, _y = 20;
 	private boolean firing = false;
-	
+
 	// BITMAP RELATED VARS
 	Matrix matrix = new Matrix();
 	Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(),
@@ -126,7 +130,7 @@ public class MaruVortex extends Activity {
 	Bitmap turningBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.turning);
 	private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH,
-		turningW, turningH;
+	turningW, turningH;
 	private int screenW, screenH;
 
 	// DEBUG TAGS
@@ -158,8 +162,15 @@ public class MaruVortex extends Activity {
 	    // t = SystemClock.elapsedRealtime();
 	    _thread.setRunning(true);
 	    _thread.start();
-	    whitePaint.setColor(Color.WHITE);
-	    blackPaint.setColor(Color.BLACK);
+	    whiteTextPaint.setColor(Color.WHITE);
+	    whiteTextPaint.setAntiAlias(true);
+	    whiteTextPaint.setTextSize(14);
+	    blackTextPaint.setColor(Color.BLACK);
+	    blackTextPaint.setAntiAlias(true);
+	    blackTextPaint.setTextSize(14);
+	    largeTextPaint.setColor(Color.WHITE);
+	    largeTextPaint.setAntiAlias(true);
+	    largeTextPaint.setTextSize(32);
 	    redPaint.setColor(Color.RED);
 	    bulletW = bulletBitmap.getWidth();
 	    bulletH = bulletBitmap.getHeight();
@@ -171,7 +182,7 @@ public class MaruVortex extends Activity {
 	    turningH = turningBitmap.getHeight();
 	    ColorMatrix cm = new ColorMatrix(mx);
 	    invert.setColorFilter(new ColorMatrixColorFilter(cm));
-	    invert.setFlags(Paint.ANTI_ALIAS_FLAG);
+	    invert.setAntiAlias(true);
 	    // start();
 
 	}
@@ -199,7 +210,7 @@ public class MaruVortex extends Activity {
 	    mCompass = mSensorManager
 		    .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 	    assert (mAccel != null && mCompass != null); // otherwise we are
-							 // screwed
+	    // screwed
 	    _thread = new DrawThread(getHolder(), this);
 	    setFocusable(true);
 	    // TODO Auto-generated constructor stub
@@ -210,6 +221,10 @@ public class MaruVortex extends Activity {
 		    SensorManager.SENSOR_DELAY_GAME);
 	    mSensorManager.registerListener(this, mCompass,
 		    SensorManager.SENSOR_DELAY_GAME);
+	    pitch = roll = Float.NaN;
+	    for (int i=0;i<3;i++)
+		accelValues[i] = compassValues[i] = 0;
+	    sensorsReady = false;
 	}
 
 	public void stop() {
@@ -237,6 +252,7 @@ public class MaruVortex extends Activity {
 	    }
 	    if (sensorsReady && SensorManager.getRotationMatrix(inR, inclineMatrix, accelValues, compassValues)) {
 		SensorManager.getOrientation(inR, prefValues);
+		
 		pitch = (float) Math.toDegrees(prefValues[1]);
 		roll = (float) Math.toDegrees(prefValues[2]);
 		if (mc != null)
@@ -250,136 +266,161 @@ public class MaruVortex extends Activity {
 	    long nt = SystemClock.elapsedRealtime();
 	    if (canvas == null) return;
 	    if (t < 0) t = nt;
-	    if (berzerk) {
-		bitmapPaint = invert;
-		textPaint = blackPaint;
-		canvas.drawColor(Color.WHITE);
-	    } else {
-		bitmapPaint = aA;
-		textPaint = whitePaint;
-		canvas.drawColor(Color.BLACK);
-	    }
+
 
 	    screenW = canvas.getWidth();
 	    screenH = canvas.getHeight();
+
 	    
-	    if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
 
-	    // canvas.drawColor(Color.BLACK);
-
-	    if (firing && nt - g >= 100) {
-		bullets.add(new Bullet(_x, _y, mc.getx(), mc.gety(), screenH, screenW));
-		g = nt;
-	    }
-	    if (nt - f >= 1000) {
-		if (level < 2)
-		    squares.add(new BoxParticle(r, screenH, screenW));
-		else if (level < 3) {
-		    parabolics.add(new ParabolicParticle(r, screenH, screenW));
-		    turns.add(new TurningParticle(r, screenH, screenW));
-		} else
-		    turns.add(new TurningParticle(r, screenH, screenW));
-		f = nt;
-	    }
-
-	    rms.clear();
-	    rms2.clear();
-	    rms3.clear();
-	    rms4.clear();
-	    for (Bullet i : bullets)
-		if (!i.onscreen())
-		    rms.add(i);
-	    for (BoxParticle i : squares)
-		if (!i.onscreen())
-		    rms2.add(i);
-	    for (ParabolicParticle i : parabolics)
-		if (!i.onscreen())
-		    rms3.add(i);
-	    for (TurningParticle i : turns)
-		if (!i.onscreen())
-		    rms4.add(i);
-	    bullets.removeAll(rms);
-	    squares.removeAll(rms2);
-	    parabolics.removeAll(rms3);
-	    turns.removeAll(rms4);
-	    rms.clear();
-	    rms2.clear();
-	    rms3.clear();
-	    rms4.clear();
-
-	    for (Bullet i : bullets) {
-		for (BoxParticle j : squares) {
-		    if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-			    .getRadius() + j.getRadius())) {
-			rms.add(i);
-			rms2.add(j);
-			score++;
-		    }
-
+	    if (!over) {
+		if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
+		
+		if (firing && nt - g >= 100) {
+		    bullets.add(new Bullet(_x, _y, mc.getx(), mc.gety(), screenH, screenW));
+		    g = nt;
 		}
-		for (ParabolicParticle j : parabolics) {
-		    if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-			    .getRadius() + j.getRadius())) {
+		if (nt - f >= 1000) {
+		    if (level < 2)
+			squares.add(new BoxParticle(r, screenH, screenW));
+		    else if (level < 3) {
+			parabolics.add(new ParabolicParticle(r, screenH, screenW));
+			turns.add(new TurningParticle(r, screenH, screenW));
+		    } else
+			turns.add(new TurningParticle(r, screenH, screenW));
+		    f = nt;
+		}
+
+		rms.clear();
+		rms2.clear();
+		rms3.clear();
+		rms4.clear();
+		for (Bullet i : bullets)
+		    if (!i.onscreen())
 			rms.add(i);
-			rms3.add(j);
-			score++;
+		for (BoxParticle i : squares)
+		    if (!i.onscreen())
+			rms2.add(i);
+		for (ParabolicParticle i : parabolics)
+		    if (!i.onscreen())
+			rms3.add(i);
+		for (TurningParticle i : turns)
+		    if (!i.onscreen())
+			rms4.add(i);
+		bullets.removeAll(rms);
+		squares.removeAll(rms2);
+		parabolics.removeAll(rms3);
+		turns.removeAll(rms4);
+		rms.clear();
+		rms2.clear();
+		rms3.clear();
+		rms4.clear();
+
+		for (Bullet i : bullets) {
+		    for (BoxParticle j : squares) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
+				.getRadius() + j.getRadius())) {
+			    rms.add(i);
+			    rms2.add(j);
+			    score++;
+			}
+
+		    }
+		    for (ParabolicParticle j : parabolics) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
+				.getRadius() + j.getRadius())) {
+			    rms.add(i);
+			    rms3.add(j);
+			    score++;
+			}
+		    }
+		    for (TurningParticle j : turns) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
+				.getRadius() + j.getRadius())) {
+
+			    rms.add(i);
+			    rms4.add(j);
+			    score++;
+			}
 		    }
 		}
-		for (TurningParticle j : turns) {
-		    if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i
-			    .getRadius() + j.getRadius())) {
+		squares.removeAll(rms2);
+		parabolics.removeAll(rms3);
+		turns.removeAll(rms4);
 
-			rms.add(i);
-			rms4.add(j);
-			score++;
-		    }
+		bullets.removeAll(rms);
+
+		for (BoxParticle j : squares)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
+			over = true;
+
+		for (ParabolicParticle j : parabolics)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
+			over = true;
+
+		for (TurningParticle j : turns)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
+			over = true;
+		if (over) {
+		    berzerk = false;
+		    stop();
 		}
 	    }
-	    squares.removeAll(rms2);
-	    parabolics.removeAll(rms3);
-	    turns.removeAll(rms4);
-
-	    bullets.removeAll(rms);
-
-	    for (BoxParticle i : squares) {
-		i.update(((double) (nt - t)) / 1000);
-		matrix.setRotate(i.getAngle(), squareW / 2, squareH / 2);
-		matrix.postTranslate(i.getx() - squareW / 2, i.gety() - squareH
-			/ 2);
-		canvas.drawBitmap(squareBitmap, matrix, bitmapPaint);
+	    if (berzerk&&!over) {
+		bitmapPaint = invert;
+		textPaint = blackTextPaint;
+		canvas.drawColor(Color.WHITE);
+	    } else {
+		bitmapPaint = aA;
+		textPaint = whiteTextPaint;
+		canvas.drawColor(Color.BLACK);
 	    }
-	    for (ParabolicParticle i : parabolics) {
-		i.update(((double) (nt - t)) / 1000);
-		matrix.setRotate(i.getAngle(), parabolicW / 2, parabolicH / 2);
-		matrix.postTranslate(i.getx() - parabolicW / 2, i.gety()
-			- parabolicH / 2);
-		canvas.drawBitmap(parabolicBitmap, matrix, bitmapPaint);
-	    }
-	    for (TurningParticle i : turns) {
-		i.update(((double) (nt - t)) / 1000);
-		matrix.setRotate(i.getAngle(), turningW / 2, turningH / 2);
-		matrix.postTranslate(i.getx() - turningW / 2, i.gety()
-			- turningH / 2);
-		canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
-	    }
+	    if (!over) {
 
-	    for (Bullet i : bullets) {
-		i.update(((double) (nt - t)) / 1000);
+		for (BoxParticle i : squares) {
+		    i.update(((double) (nt - t)) / 1000);
+		    matrix.setRotate(i.getAngle(), squareW / 2, squareH / 2);
+		    matrix.postTranslate(i.getx() - squareW / 2, i.gety() - squareH
+			    / 2);
+		    canvas.drawBitmap(squareBitmap, matrix, bitmapPaint);
+		}
+		for (ParabolicParticle i : parabolics) {
+		    i.update(((double) (nt - t)) / 1000);
+		    matrix.setRotate(i.getAngle(), parabolicW / 2, parabolicH / 2);
+		    matrix.postTranslate(i.getx() - parabolicW / 2, i.gety()
+			    - parabolicH / 2);
+		    canvas.drawBitmap(parabolicBitmap, matrix, bitmapPaint);
+		}
+		for (TurningParticle i : turns) {
+		    i.update(((double) (nt - t)) / 1000);
+		    matrix.setRotate(i.getAngle(), turningW / 2, turningH / 2);
+		    matrix.postTranslate(i.getx() - turningW / 2, i.gety()
+			    - turningH / 2);
+		    canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
+		}
 
-		matrix.setRotate(i.getAngle(), bulletW / 2, bulletH / 2);
-		matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH
-			/ 2);
-		canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
-	    }
+		for (Bullet i : bullets) {
+		    i.update(((double) (nt - t)) / 1000);
 
-	    mc.update(((double) (nt - t)) / 1000);
-	    canvas.drawBitmap(mcBitmap, mc.getx() - mcBitmap.getWidth() / 2, mc.gety()
-		    - mcBitmap.getHeight() / 2, bitmapPaint);
-	    if (score >= 10) {
-		level = 2;
+		    matrix.setRotate(i.getAngle(), bulletW / 2, bulletH / 2);
+		    matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH
+			    / 2);
+		    canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
+		}
+
+		mc.update(((double) (nt - t)) / 1000);
+		canvas.drawBitmap(mcBitmap, mc.getx() - mcBitmap.getWidth() / 2, mc.gety()
+			- mcBitmap.getHeight() / 2, bitmapPaint);
+		if (score >= 10) {
+		    level = 2;
+		}
 	    }
 	    canvas.drawText("Score: " + score, 50, 25, textPaint);
-	    canvas.drawText("Level: " + level, screenW - 75, 25, textPaint);
+	    canvas.drawText("Level: " + level, screenW - 100, 25, textPaint);
+	    if (over) {
+		canvas.drawText(OVER_STR, (screenW-largeTextPaint.measureText(OVER_STR))/2, screenH/2-12, largeTextPaint);
+		canvas.drawText(OVER_STR_2, (screenW-largeTextPaint.measureText(OVER_STR_2))/2, screenH/2+16, largeTextPaint);
+	    }
 	    //if (pitch!=Float.NaN)
 	    //    canvas.drawText("pitch = " + pitch + ", roll = " + roll, 0 , 25, textPaint);
 	    if (berzerk)
@@ -392,6 +433,18 @@ public class MaruVortex extends Activity {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+	    if (over && event.getAction() == MotionEvent.ACTION_DOWN) {
+		mc = null;
+		level = 1;
+		score = 0;
+		t = f = g = -1000;
+		squares.clear();
+		bullets.clear();
+		parabolics.clear();
+		turns.clear();
+		over = false;
+		start();
+	    }
 	    _x = (int) event.getX();
 	    _y = (int) event.getY();
 	    if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
