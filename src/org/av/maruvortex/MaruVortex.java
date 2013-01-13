@@ -217,10 +217,8 @@ public class MaruVortex extends Activity {
 	}
 
 	public void start() {
-	    mSensorManager.registerListener(this, mAccel,
-		    SensorManager.SENSOR_DELAY_GAME);
-	    mSensorManager.registerListener(this, mCompass,
-		    SensorManager.SENSOR_DELAY_GAME);
+	    mSensorManager.registerListener(this, mAccel, SensorManager.SENSOR_DELAY_GAME);
+	    mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_GAME);
 	    pitch = roll = Float.NaN;
 	    for (int i=0;i<3;i++)
 		accelValues[i] = compassValues[i] = 0;
@@ -444,13 +442,14 @@ public class MaruVortex extends Activity {
 		turns.clear();
 		over = false;
 		start();
+	    } else {
+		_x = (int) event.getX();
+		_y = (int) event.getY();
+		if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+		    if (!firing) g = -1000;
+		    firing = true;
+		} else firing = false;
 	    }
-	    _x = (int) event.getX();
-	    _y = (int) event.getY();
-	    if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
-		if (!firing) g = -1000;
-		firing = true;
-	    } else firing = false;
 	    return true;
 	}
 
