@@ -46,6 +46,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 	boolean berzerk = false;
 	
 	//PAINT VARS
+	Paint redPaint = new Paint();
 	Paint blackPaint = new Paint();
 	Paint whitePaint = new Paint();
 	Paint textPaint;
@@ -115,6 +116,7 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		_thread.start();
 		whitePaint.setColor(Color.WHITE);
 		blackPaint.setColor(Color.BLACK);
+		redPaint.setColor(Color.RED);
 		bulletW = bulletBitmap.getWidth();
 		bulletH = bulletBitmap.getHeight();
 		squareW = squareBitmap.getWidth();
@@ -278,6 +280,8 @@ class Panel extends SurfaceView implements SurfaceHolder.Callback{
 		canvas.drawText("Score: " + score, 50, 25, textPaint);
 		canvas.drawText("Level: " + level, screenW - 75, 25, textPaint);
 		
+		if(berzerk)
+			canvas.drawText("BERZERK MODE ACTIVATED", screenW/2-100, 25, redPaint);
 		
 		
 		t = nt;
