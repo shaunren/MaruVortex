@@ -102,16 +102,18 @@ class BoxParticle extends Particle{
 
     private int dir; //0 for left right, 1 for down up, 2 for right left, 3 for up down
 
-    public BoxParticle(Random r, int h, int l) {
+    public BoxParticle(Random r, int h, int l, int mcx, int mcy) {
 	c = 40;
 	radius = 13;
 	this.screenLength = l;
 	this.screenHeight = h;
 	dir = r.nextInt(4);
-	if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
-	else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
-	else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
-	else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	do{ 
+		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
     }
@@ -124,16 +126,18 @@ class BoxParticle extends Particle{
 }
 class ParabolicParticle extends Particle{
     int dir;
-    public ParabolicParticle(Random r, int h, int l) {
+    public ParabolicParticle(Random r, int h, int l, int mcx, int mcy) {
 	c = 40;
 	radius = 11;
 	this.screenLength = l;
 	this.screenHeight = h;
 	dir = r.nextInt(4);
-	if (dir == 0){dy = 70; dx = 20; x = 0; y = r.nextInt(h);} 
-	else if (dir == 1){dx = 70; dy = -20; x = r.nextInt(l); y = h;}
-	else if (dir == 2){dy = 70; dx = -20; x = l; y = r.nextInt(h);}
-	else if (dir == 3){dx = 70; dy = 20; x = r.nextInt(l); y = 0;}
+	do{ 
+		if (dir == 0){dy = 70; dx = 20; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dx = 70; dy = -20; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dy = 70; dx = -20; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dx = 70; dy = 20; x = r.nextInt(l); y = 0;}
+		} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
     }
@@ -143,16 +147,18 @@ class ParabolicParticle extends Particle{
 class TurningParticle extends Particle{
     int dir;
     int t;
-    public TurningParticle(Random r, int h, int l) {
+    public TurningParticle(Random r, int h, int l, int mcx, int mcy) {
 	c = 40;
 	radius = 13;
 	this.screenLength = l;
 	this.screenHeight = h;
 	dir = r.nextInt(4);
-	if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
-	else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
-	else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
-	else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	do{ 
+		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
     }
