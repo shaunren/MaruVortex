@@ -51,7 +51,7 @@ class Character extends Particle {
     }
     public void updateOrientation(double pitch, double roll) {
 	pitch /= -30;
-	roll = (-25-roll)/15;
+	roll = (-30-roll)/20;
 	if (Math.abs(pitch)<=1) dx = Math.signum(pitch)*Math.pow(Math.abs(pitch), 1.2)*w;
 	//if (dx < 1) dx = 0;
 	if (Math.abs(roll)<=1) dy = Math.signum(roll)*Math.pow(Math.abs(roll), 1.2)*h;
@@ -109,10 +109,10 @@ class BoxParticle extends Particle{
 	this.screenHeight = h;
 	dir = r.nextInt(4);
 	do{ 
-		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
-		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
-		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
-		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	    if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+	    else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+	    else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+	    else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
 	} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
@@ -133,11 +133,11 @@ class ParabolicParticle extends Particle{
 	this.screenHeight = h;
 	dir = r.nextInt(4);
 	do{ 
-		if (dir == 0){dy = 70; dx = 20; x = 0; y = r.nextInt(h);} 
-		else if (dir == 1){dx = 70; dy = -20; x = r.nextInt(l); y = h;}
-		else if (dir == 2){dy = 70; dx = -20; x = l; y = r.nextInt(h);}
-		else if (dir == 3){dx = 70; dy = 20; x = r.nextInt(l); y = 0;}
-		} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
+	    if (dir == 0){dy = 70; dx = 20; x = 0; y = r.nextInt(h);} 
+	    else if (dir == 1){dx = 70; dy = -20; x = r.nextInt(l); y = h;}
+	    else if (dir == 2){dy = 70; dx = -20; x = l; y = r.nextInt(h);}
+	    else if (dir == 3){dx = 70; dy = 20; x = r.nextInt(l); y = 0;}
+	} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
     }
@@ -154,10 +154,10 @@ class TurningParticle extends Particle{
 	this.screenHeight = h;
 	dir = r.nextInt(4);
 	do{ 
-		if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
-		else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
-		else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
-		else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
+	    if (dir == 0){dx = 50; x = 0; y = r.nextInt(h);} 
+	    else if (dir == 1){dy = -50; x = r.nextInt(l); y = h;}
+	    else if (dir == 2){dx = -50; x = l; y = r.nextInt(h);}
+	    else if (dir == 3){dy = 50; x = r.nextInt(l); y = 0;}
 	} while (Math.abs(x - mcx) < 50 && Math.abs(y - mcy) < 50);
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 

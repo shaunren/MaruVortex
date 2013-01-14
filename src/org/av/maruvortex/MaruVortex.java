@@ -65,78 +65,78 @@ public class MaruVortex extends Activity {
 	// GAME VARS
 	private int level = 1;
 	private int score = 0;
-	private boolean over = false;
+	private volatile boolean over = false;
 	private static final String OVER_STR = "GAME OVER";
 	private static final String OVER_STR_2 = "TOUCH TO RESTART";
+	private static final String BERZERK_STR = "BERZERK MODE ACTIVATED";
 	private Random r = new Random();
-	private long berzerkStart;
+	private volatile long berzerkStart;
 	private int berzerkLength = 5000;
 
 	private Sensor mAccel, mCompass;
-	private boolean sensorsReady = false;
+	private volatile boolean sensorsReady = false;
 	private float[] accelValues = new float[3];
 	private float[] compassValues = new float[3];
 	private float[] inR = new float[9];
 	private float[] inclineMatrix = new float[9];
 	private float[] prefValues = new float[3];
 	// in degrees
-	private float pitch = Float.NaN; // L 30 to -30 R
-	private float roll = Float.NaN; // slow -35 to -15 fast
+	private volatile float pitch = Float.NaN; // L 30 to -30 R
+	private volatile float roll = Float.NaN; // slow -35 to -15 fast
 
-	boolean berzerk = false;
+	private volatile boolean berzerk = false;
 
 	// PAINT VARS
-	Paint redPaint = new Paint();
-	Paint blackTextPaint = new Paint();
-	Paint whiteTextPaint = new Paint();
-	Paint largeTextPaint = new Paint();
-	Paint textPaint;
+	private Paint redTextPaint = new Paint();
+	private Paint blackTextPaint = new Paint();
+	private Paint whiteTextPaint = new Paint();
+	private Paint largeTextPaint = new Paint();
+	private Paint textPaint;
 
-	Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
-	Paint invert = new Paint();
-	float mx[] = { -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f,
+	private Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint invert = new Paint();
+	private float mx[] = { -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 		0.0f };
 
-	Paint bitmapPaint;
+	private Paint bitmapPaint;
 
 	// TIME VARS
-	// long start;
-	long t = -1000, f = -1000, g = -1000; // f is square particle, g is bullet
+	private volatile long t = -1000, f = -1000, g = -1000; // f is square particle, g is bullet
 
 
-	Character mc = null;
+	private volatile Character mc = null;
 	// PARTICLE CONTAINERS
-	HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
-	HashSet<Bullet> bullets = new HashSet<Bullet>();
-	HashSet<ParabolicParticle> parabolics = new HashSet<ParabolicParticle>();
-	HashSet<TurningParticle> turns = new HashSet<TurningParticle>();
-	HashSet <BerzerkUp> berzerkUps = new HashSet <BerzerkUp>();
-	HashSet<Bullet> rms = new HashSet<Bullet>();
-	HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
-	HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
-	HashSet<TurningParticle> rms4 = new HashSet<TurningParticle>();
-	HashSet <BerzerkUp> rms5 = new HashSet <BerzerkUp>();
+	private HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
+	private HashSet<Bullet> bullets = new HashSet<Bullet>();
+	private HashSet<ParabolicParticle> parabolics = new HashSet<ParabolicParticle>();
+	private HashSet<TurningParticle> turns = new HashSet<TurningParticle>();
+	private HashSet <BerzerkUp> berzerkUps = new HashSet <BerzerkUp>();
+	private HashSet<Bullet> rms = new HashSet<Bullet>();
+	private HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
+	private HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
+	private HashSet<TurningParticle> rms4 = new HashSet<TurningParticle>();
+	private HashSet <BerzerkUp> rms5 = new HashSet <BerzerkUp>();
 	private DrawThread _thread;
 
 	// TOUCH LOCATION
-	private int _x = 20, _y = 20;
-	private boolean firing = false;
+	private volatile int _x = 20, _y = 20;
+	private volatile boolean firing = false;
 
 	// BITMAP RELATED VARS
-	Matrix matrix = new Matrix();
-	Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(),
+	private Matrix matrix = new Matrix();
+	private Bitmap mcBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.mc);
-	Bitmap squareBitmap = BitmapFactory.decodeResource(getResources(),
+	private Bitmap squareBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.square);
-	Bitmap parabolicBitmap = BitmapFactory.decodeResource(getResources(),
+	private Bitmap parabolicBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.parabolic);
-	Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(),
+	private Bitmap bulletBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.bullet);
-	Bitmap turningBitmap = BitmapFactory.decodeResource(getResources(),
+	private Bitmap turningBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.turning);
-	Bitmap berzerkBitmap = BitmapFactory.decodeResource(getResources(),
-			R.drawable.berzerk);
+	private Bitmap berzerkBitmap = BitmapFactory.decodeResource(getResources(),
+		R.drawable.berzerk);
 	private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH,
 	turningW, turningH, berzerkW, berzerkH;
 	private int screenW, screenH;
@@ -145,14 +145,6 @@ public class MaruVortex extends Activity {
 	private static final String LOG_TAG = "MaruVortex";
 
 	private int sq(int x) {
-	    return x * x;
-	}
-
-	private float sq(float x) {
-	    return x * x;
-	}
-
-	private double sq(double x) {
 	    return x * x;
 	}
 
@@ -179,7 +171,12 @@ public class MaruVortex extends Activity {
 	    largeTextPaint.setColor(Color.WHITE);
 	    largeTextPaint.setAntiAlias(true);
 	    largeTextPaint.setTextSize(32);
-	    redPaint.setColor(Color.RED);
+	    redTextPaint.setColor(Color.RED);
+	    redTextPaint.setAntiAlias(true);
+	    redTextPaint.setTextSize(18);
+	    ColorMatrix cm = new ColorMatrix(mx);
+	    invert.setColorFilter(new ColorMatrixColorFilter(cm));
+	    invert.setAntiAlias(true);
 	    bulletW = bulletBitmap.getWidth();
 	    bulletH = bulletBitmap.getHeight();
 	    squareW = squareBitmap.getWidth();
@@ -190,10 +187,7 @@ public class MaruVortex extends Activity {
 	    turningH = turningBitmap.getHeight();
 	    berzerkW = berzerkBitmap.getWidth();
 	    berzerkH = berzerkBitmap.getHeight();
-	    ColorMatrix cm = new ColorMatrix(mx);
-	    invert.setColorFilter(new ColorMatrixColorFilter(cm));
-	    invert.setAntiAlias(true);
-	    // start();
+
 
 	}
 
@@ -260,7 +254,7 @@ public class MaruVortex extends Activity {
 	    }
 	    if (sensorsReady && SensorManager.getRotationMatrix(inR, inclineMatrix, accelValues, compassValues)) {
 		SensorManager.getOrientation(inR, prefValues);
-		
+
 		pitch = (float) Math.toDegrees(prefValues[1]);
 		roll = (float) Math.toDegrees(prefValues[2]);
 		if (mc != null)
@@ -278,10 +272,10 @@ public class MaruVortex extends Activity {
 	    screenW = canvas.getWidth();
 	    screenH = canvas.getHeight();
 
-	    
+
 	    if(berzerk && SystemClock.elapsedRealtime() - berzerkStart > berzerkLength)
-	    	berzerk = false;
-	    
+		berzerk = false;
+
 	    if (!over) {
 		if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
 		//add Enemies
@@ -296,12 +290,12 @@ public class MaruVortex extends Activity {
 			parabolics.add(new ParabolicParticle(r, screenH, screenW, _x, _y));
 			turns.add(new TurningParticle(r, screenH, screenW, _x, _y));
 		    } else {
-				turns.add(new TurningParticle(r, screenH, screenW, _x, _y));
-			    squares.add(new BoxParticle(r, screenH, screenW, _x, _y));
-			    parabolics.add(new ParabolicParticle(r, screenH, screenW, _x, _y));
+			turns.add(new TurningParticle(r, screenH, screenW, _x, _y));
+			squares.add(new BoxParticle(r, screenH, screenW, _x, _y));
+			parabolics.add(new ParabolicParticle(r, screenH, screenW, _x, _y));
 		    }
 		    f = nt;
-		    
+
 		}
 		//stop add Enemies
 		rms.clear();
@@ -337,7 +331,7 @@ public class MaruVortex extends Activity {
 			    rms.add(i);
 			    rms2.add(j);
 			    if (r.nextInt(30) == 1 )
-			    	berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
+				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
 
@@ -347,7 +341,7 @@ public class MaruVortex extends Activity {
 			    rms.add(i);
 			    rms3.add(j);
 			    if (r.nextInt(30) == 1 )
-			    	berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
+				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
 		    }
@@ -356,7 +350,7 @@ public class MaruVortex extends Activity {
 			    rms.add(i);
 			    rms4.add(j);
 			    if (r.nextInt(30) == 1 )
-			    	berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
+				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
 		    }
@@ -384,18 +378,18 @@ public class MaruVortex extends Activity {
 		    stop();
 		}
 		//Berzerk powerup collision
-	    if (!berzerk){
-	    	for (BerzerkUp i : berzerkUps)
-	    		if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())){
-	    			berzerk = true;
-	    			berzerkStart = SystemClock.elapsedRealtime();
-	    			rms5.add(i);
-	    		}
-	    			
-	    }
-	    berzerkUps.removeAll(rms5);
-	    rms5.clear();
-	    //end Berzerk powerup collision
+		if (!berzerk){
+		    for (BerzerkUp i : berzerkUps)
+			if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())){
+			    berzerk = true;
+			    berzerkStart = SystemClock.elapsedRealtime();
+			    rms5.add(i);
+			}
+
+		}
+		berzerkUps.removeAll(rms5);
+		rms5.clear();
+		//end Berzerk powerup collision
 	    }
 	    //Berzerk events
 	    if (berzerk&&!over) {
@@ -408,9 +402,9 @@ public class MaruVortex extends Activity {
 		canvas.drawColor(Color.BLACK);
 	    }
 	    //end Berzerk events
-	    
+
 	    if (!over) {
-	    //Rendering particles
+		//Rendering particles
 		for (BoxParticle i : squares) {
 		    i.update(((double) (nt - t)) / 1000);
 		    matrix.setRotate(i.getAngle(), squareW / 2, squareH / 2);
@@ -453,8 +447,8 @@ public class MaruVortex extends Activity {
 		//end Rendering particles
 		//leveling
 		if (score >= 100)
-			level = 3;
-			else if (score >= 25) 
+		    level = 3;
+		else if (score >= 25) 
 		    level = 2;
 
 	    }
@@ -466,13 +460,10 @@ public class MaruVortex extends Activity {
 		canvas.drawText(OVER_STR, (screenW-largeTextPaint.measureText(OVER_STR))/2, screenH/2-12, largeTextPaint);
 		canvas.drawText(OVER_STR_2, (screenW-largeTextPaint.measureText(OVER_STR_2))/2, screenH/2+16, largeTextPaint);
 	    }
-	    //if (pitch!=Float.NaN)
-	    //    canvas.drawText("pitch = " + pitch + ", roll = " + roll, 0 , 25, textPaint);
 	    if (berzerk)
-		canvas.drawText("BERZERK MODE ACTIVATED", (screenW-redPaint.measureText("BERZERK MODE ACTIVATED")) / 2,
-			25, redPaint);
+		canvas.drawText(BERZERK_STR, (screenW-redTextPaint.measureText(BERZERK_STR))/2, 25, redTextPaint);
 	    //end Text rendering 
-	     t = nt;
+	    t = nt;
 	}
 
 	@Override
