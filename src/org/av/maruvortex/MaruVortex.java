@@ -310,7 +310,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms2.add(j);
-			    if (r.nextInt(30) == 0)
+			    if (r.nextInt(20) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
@@ -320,7 +320,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms3.add(j);
-			    if (r.nextInt(30) == 0)
+			    if (r.nextInt(20) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
@@ -329,7 +329,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms4.add(j);
-			    if (r.nextInt(30) == 0)
+			    if (r.nextInt(20) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
