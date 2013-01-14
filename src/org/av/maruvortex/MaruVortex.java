@@ -146,9 +146,7 @@ public class MaruVortex extends Activity {
 
 	@Override
 	public void surfaceCreated(SurfaceHolder arg0) {
-	    // start = SystemClock.elapsedRealtime();
 	    setKeepScreenOn(true);
-	    // t = SystemClock.elapsedRealtime();
 	    _thread.setRunning(true);
 	    _thread.start();
 	    whiteTextPaint.setColor(Color.WHITE);
