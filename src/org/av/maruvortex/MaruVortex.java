@@ -257,7 +257,7 @@ public class MaruVortex extends Activity {
 	    if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
 	    if (!over) {
 		//add Enemies
-		if (firing && nt - g >= 100) {
+		if (firing && nt - g >= 150) {
 		    bullets.add(new Bullet(_x, _y, mc.getx(), mc.gety(), screenH, screenW));
 		    g = nt;
 		}
