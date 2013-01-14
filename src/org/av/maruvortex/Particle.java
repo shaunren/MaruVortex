@@ -7,7 +7,7 @@ abstract public class Particle {
     double x, y, dx, dy, angle;
     int screenLength, screenHeight;
     protected static final double EPSILON = 0.00005;
-    double c=4; 
+    double c=5; 
 
     public boolean onscreen() {
 	return !(x > screenLength+20 || x < -20 || y > screenHeight+20 || y < -20);
@@ -141,7 +141,6 @@ class ParabolicParticle extends Particle {
 	angle = Math.toDegrees(Math.atan2(dy, dx));
 
     }
-
 }
 
 class TurningParticle extends Particle {
@@ -180,4 +179,24 @@ class TurningParticle extends Particle {
 
     }
 
+}
+class HomingParticle extends Particle {
+    int t;
+    Random r;
+    public HomingParticle(Random r, double c, int h, int l, int mcx, int mcy) {
+	this.r = r;
+	this.c = c;
+	radius = 13;
+	do {
+	    x = r.nextInt(l);
+	    y = r.nextInt(h);
+	} while (Math.abs(x-mcx)<50 && Math.abs(y-mcy)<50);
+	updateMC(mcx, mcy);
+    }
+    
+    public void updateMC(int mcx, int mcy) {
+	// with some noise
+	dx = x-mcx+2*r.nextFloat()-1.0f;
+	dy = y-mcy+2*r.nextFloat()-1.0f;
+    }
 }

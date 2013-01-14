@@ -103,12 +103,14 @@ public class MaruVortex extends Activity {
 	private HashSet<Bullet> bullets = new HashSet<Bullet>();
 	private HashSet<ParabolicParticle> parabolics = new HashSet<ParabolicParticle>();
 	private HashSet<TurningParticle> turns = new HashSet<TurningParticle>();
-	private HashSet <BerzerkUp> berzerkUps = new HashSet <BerzerkUp>();
+	private HashSet<HomingParticle> homings = new HashSet<HomingParticle>();
+	private HashSet<BerzerkUp> berzerkUps = new HashSet <BerzerkUp>();
 	private HashSet<Bullet> rms = new HashSet<Bullet>();
 	private HashSet<BoxParticle> rms2 = new HashSet<BoxParticle>();
 	private HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
 	private HashSet<TurningParticle> rms4 = new HashSet<TurningParticle>();
-	private HashSet <BerzerkUp> rms5 = new HashSet <BerzerkUp>();
+	private HashSet<HomingParticle> rms5 = new HashSet<HomingParticle>();
+	private HashSet <BerzerkUp> rmsBU = new HashSet <BerzerkUp>();
 
 	// TOUCH LOCATION
 	private volatile int _x, _y;
@@ -126,10 +128,12 @@ public class MaruVortex extends Activity {
 		R.drawable.bullet);
 	private Bitmap turningBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.turning);
+	private Bitmap homingBitmap = BitmapFactory.decodeResource(getResources(),
+		R.drawable.homing);
 	private Bitmap berzerkBitmap = BitmapFactory.decodeResource(getResources(),
 		R.drawable.berzerk);
 	private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH,
-	turningW, turningH, berzerkW, berzerkH;
+	turningW, turningH, homingW, homingH, berzerkW, berzerkH;
 	private int screenW, screenH;
 
 	// DEBUG TAGS
@@ -172,6 +176,8 @@ public class MaruVortex extends Activity {
 	    parabolicH = parabolicBitmap.getHeight();
 	    turningW = turningBitmap.getWidth();
 	    turningH = turningBitmap.getHeight();
+	    homingW = homingBitmap.getWidth();
+	    homingH = homingBitmap.getHeight();
 	    berzerkW = berzerkBitmap.getWidth();
 	    berzerkH = berzerkBitmap.getHeight();
 	}
@@ -263,14 +269,15 @@ public class MaruVortex extends Activity {
 		}
 		if (nt - f >= 1000) {
 		    if (level < 2)
-			squares.add(new BoxParticle(r, screenH, screenW, _x, _y));
+			squares.add(new BoxParticle(r, screenH, screenW, mc.getx(), mc.gety()));
 		    else if (level < 3) {
-			parabolics.add(new ParabolicParticle(r, screenH, screenW, _x, _y));
-			turns.add(new TurningParticle(r, screenH, screenW, _x, _y));
+			parabolics.add(new ParabolicParticle(r, screenH, screenW,mc.getx(), mc.gety()));
+			turns.add(new TurningParticle(r, screenH, screenW,mc.getx(), mc.gety()));
 		    } else {
-			turns.add(new TurningParticle(r, screenH, screenW, _x, _y));
-			squares.add(new BoxParticle(r, screenH, screenW, _x, _y));
-			parabolics.add(new ParabolicParticle(r, screenH, screenW, _x, _y));
+			turns.add(new TurningParticle(r, screenH, screenW,mc.getx(), mc.gety()));
+			squares.add(new BoxParticle(r, screenH, screenW, mc.getx(), mc.gety()));
+			parabolics.add(new ParabolicParticle(r, screenH, screenW, mc.getx(), mc.gety()));
+			homings.add(new HomingParticle(r, 40, screenH, screenW, mc.getx(), mc.gety()));
 		    }
 		    f = nt;
 
@@ -280,6 +287,7 @@ public class MaruVortex extends Activity {
 		rms2.clear();
 		rms3.clear();
 		rms4.clear();
+		rms5.clear();
 		//Onscreen checking
 		for (Bullet i : bullets)
 		    if (!i.onscreen())
@@ -293,14 +301,19 @@ public class MaruVortex extends Activity {
 		for (TurningParticle i : turns)
 		    if (!i.onscreen())
 			rms4.add(i);
+		for (HomingParticle i : homings)
+		    if (!i.onscreen())
+			rms5.add(i);
 		bullets.removeAll(rms);
 		squares.removeAll(rms2);
 		parabolics.removeAll(rms3);
 		turns.removeAll(rms4);
+		homings.removeAll(rms5);
 		rms.clear();
 		rms2.clear();
 		rms3.clear();
 		rms4.clear();
+		rms5.clear();
 		//end Onscreen checking
 		//Enemy collision with bullets
 		for (Bullet i : bullets) {
@@ -332,15 +345,26 @@ public class MaruVortex extends Activity {
 			    score++;
 			}
 		    }
+		    for (HomingParticle j : homings) {
+			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
+			    rms.add(i);
+			    rms5.add(j);
+			    if (r.nextInt(20) == 0)
+				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
+			    score++;
+			}
+		    }
 		}
 		squares.removeAll(rms2);
 		parabolics.removeAll(rms3);
 		turns.removeAll(rms4);
+		homings.removeAll(rms5);
 		bullets.removeAll(rms);
 		rms.clear();
 		rms2.clear();
 		rms3.clear();
 		rms4.clear();
+		rms5.clear();
 		//end Enemy collision with bullets
 		//Enemy collision with character
 		// one cannot die in berzerk mode
@@ -369,10 +393,19 @@ public class MaruVortex extends Activity {
 			} else
 			    over = true;
 		    }
+		for (HomingParticle j : homings)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius())) {
+			if (berzerk) {
+			    rms5.add(j);
+			    score++;
+			} else
+			    over = true;
+		    }
 		if (berzerk) {
 		    squares.removeAll(rms2);
 		    parabolics.removeAll(rms3);
 		    turns.removeAll(rms4);
+		    homings.removeAll(rms5);
 		    over = false;
 		}
 		//end Enemy collision with character
@@ -386,12 +419,12 @@ public class MaruVortex extends Activity {
 			if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())) {
 			    berzerk = true;
 			    berzerkStart = SystemClock.elapsedRealtime();
-			    rms5.add(i);
+			    rmsBU.add(i);
 			}
 
 		}
-		berzerkUps.removeAll(rms5);
-		rms5.clear();
+		berzerkUps.removeAll(rmsBU);
+		rmsBU.clear();
 		//end Berzerk powerup collision
 	    }
 	    //Berzerk events
@@ -426,7 +459,12 @@ public class MaruVortex extends Activity {
 		    matrix.postTranslate(i.getx() - turningW / 2, i.gety() - turningH / 2);
 		    canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
 		}
-
+		for (HomingParticle i : homings) {
+		    i.update(((double) (nt - t)) / 1000);
+		    matrix.setRotate(i.getAngle(), homingW / 2, homingH / 2);
+		    matrix.postTranslate(i.getx() - homingW / 2, i.gety() - homingH / 2);
+		    canvas.drawBitmap(homingBitmap, matrix, bitmapPaint);
+		}
 		for (Bullet i : bullets) {
 		    i.update(((double) (nt - t)) / 1000);
 
@@ -439,6 +477,9 @@ public class MaruVortex extends Activity {
 		}
 
 		mc.update(((double) (nt - t)) / 1000);
+		for (HomingParticle i : homings) {
+		    i.updateMC(mc.getx(), mc.gety());
+		}
 		canvas.drawBitmap(mcBitmap, mc.getx() - mcBitmap.getWidth() / 2, mc.gety()
 			- mcBitmap.getHeight() / 2, bitmapPaint);
 		//end Rendering particles
