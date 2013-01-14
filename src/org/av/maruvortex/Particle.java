@@ -6,7 +6,7 @@ abstract public class Particle {
     int radius;
     double x, y, dx, dy, angle;
     int screenLength, screenHeight;
-    public static final double EPSILON = 0.00005;
+    protected static final double EPSILON = 0.00005;
     double c=4; 
 
     public boolean onscreen() {
@@ -52,10 +52,11 @@ class Character extends Particle {
     public void updateOrientation(double pitch, double roll) {
 	pitch /= -30;
 	roll = (-30-roll)/20;
-	if (Math.abs(pitch)<=1) dx = Math.signum(pitch)*Math.pow(Math.abs(pitch), 1.2)*w;
-	//if (dx < 1) dx = 0;
-	if (Math.abs(roll)<=1) dy = Math.signum(roll)*Math.pow(Math.abs(roll), 1.2)*h;
-	//if (dy < 1) dy = 0;
+	// non-linear response
+	if (Math.abs(pitch)<=1) dx = Math.signum(pitch)*Math.pow(Math.abs(pitch), 1.2)*w*0.8;
+	if (dx < 0.5) dx = 0;
+	if (Math.abs(roll)<=1) dy = Math.signum(roll)*Math.pow(Math.abs(roll), 1.2)*h*0.8;
+	if (dy < 0.5) dy = 0;
     }
     public void update(double dt) {
 	x += dx*dt;
@@ -71,8 +72,6 @@ class Bullet extends Particle {
     int x0, y0;
     int targetX, targetY;
 
-
-    private static final double EPSILON = 0.00005;
     public Bullet(int targetX, int targetY, int x0, int y0, int h, int l) {
 	c = 250;
 	radius = 4;

@@ -44,24 +44,19 @@ public class MaruVortex extends Activity {
 
     @Override
     protected void onResume() {
-	// Ideally a game should implement onResume() and onPause()
-	// to take appropriate action when the activity looses focus
-
 	super.onResume();
 	_p.start();
     }
 
     @Override
     protected void onPause() {
-	// Ideally a game should implement onResume() and onPause()
-	// to take appropriate action when the activity looses focus
-
 	super.onPause();
 	_p.stop();
     }
 
-    class Panel extends SurfaceView implements SurfaceHolder.Callback,
-    SensorEventListener {
+    class Panel extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
+	private DrawThread _thread;
+	
 	// GAME VARS
 	private int level = 1;
 	private int score = 0;
@@ -72,7 +67,9 @@ public class MaruVortex extends Activity {
 	private Random r = new Random();
 	private volatile long berzerkStart;
 	private int berzerkLength = 5000;
+	private volatile boolean berzerk = false;
 
+	// SENSOR VARs
 	private Sensor mAccel, mCompass;
 	private volatile boolean sensorsReady = false;
 	private float[] accelValues = new float[3];
@@ -81,10 +78,8 @@ public class MaruVortex extends Activity {
 	private float[] inclineMatrix = new float[9];
 	private float[] prefValues = new float[3];
 	// in degrees
-	private volatile float pitch = Float.NaN; // L 30 to -30 R
-	private volatile float roll = Float.NaN; // slow -35 to -15 fast
-
-	private volatile boolean berzerk = false;
+	private volatile float pitch = Float.NaN;
+	private volatile float roll = Float.NaN;
 
 	// PAINT VARS
 	private Paint redTextPaint = new Paint();
@@ -92,20 +87,17 @@ public class MaruVortex extends Activity {
 	private Paint whiteTextPaint = new Paint();
 	private Paint largeTextPaint = new Paint();
 	private Paint textPaint;
-
+	private Paint bitmapPaint;
 	private Paint aA = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private Paint invert = new Paint();
 	private float mx[] = { -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 		0.0f };
-
-	private Paint bitmapPaint;
-
+	
 	// TIME VARS
 	private volatile long t = -1000, f = -1000, g = -1000; // f is square particle, g is bullet
 
-
-	private volatile Character mc = null;
+	private volatile Character mc = null; // main character
 	// PARTICLE CONTAINERS
 	private HashSet<BoxParticle> squares = new HashSet<BoxParticle>();
 	private HashSet<Bullet> bullets = new HashSet<Bullet>();
@@ -117,10 +109,9 @@ public class MaruVortex extends Activity {
 	private HashSet<ParabolicParticle> rms3 = new HashSet<ParabolicParticle>();
 	private HashSet<TurningParticle> rms4 = new HashSet<TurningParticle>();
 	private HashSet <BerzerkUp> rms5 = new HashSet <BerzerkUp>();
-	private DrawThread _thread;
 
 	// TOUCH LOCATION
-	private volatile int _x = 20, _y = 20;
+	private volatile int _x, _y;
 	private volatile boolean firing = false;
 
 	// BITMAP RELATED VARS
@@ -149,10 +140,8 @@ public class MaruVortex extends Activity {
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
-		int arg3) {
-	    // TODO Auto-generated method stub
-
+	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+	    // occ
 	}
 
 	@Override
@@ -187,8 +176,6 @@ public class MaruVortex extends Activity {
 	    turningH = turningBitmap.getHeight();
 	    berzerkW = berzerkBitmap.getWidth();
 	    berzerkH = berzerkBitmap.getHeight();
-
-
 	}
 
 	@Override
@@ -207,20 +194,17 @@ public class MaruVortex extends Activity {
 	}
 
 	public Panel(Context context) {
-
 	    super(context);
 	    getHolder().addCallback(this);
 	    mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-	    mCompass = mSensorManager
-		    .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-	    assert (mAccel != null && mCompass != null); // otherwise we are
-	    // screwed
+	    mCompass = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+	    assert (mAccel != null && mCompass != null); // otherwise we are screwed
 	    _thread = new DrawThread(getHolder(), this);
 	    setFocusable(true);
-	    // TODO Auto-generated constructor stub
 	}
 
 	public void start() {
+	    // register sensors
 	    mSensorManager.registerListener(this, mAccel, SensorManager.SENSOR_DELAY_GAME);
 	    mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_GAME);
 	    pitch = roll = Float.NaN;
@@ -240,7 +224,7 @@ public class MaruVortex extends Activity {
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-	    switch (event.sensor.getType()) {
+	    switch (event.sensor.getType()) { // both accelerometer and magnetic data are needed to compute orientation
 	    case Sensor.TYPE_ACCELEROMETER:
 		System.arraycopy(event.values, 0, accelValues, 0, 3);
 		if (compassValues[0]!=0) sensorsReady = true;
@@ -268,12 +252,10 @@ public class MaruVortex extends Activity {
 	    if (canvas == null) return;
 	    if (t < 0) t = nt;
 
-
 	    screenW = canvas.getWidth();
 	    screenH = canvas.getHeight();
 
-
-	    if(berzerk && SystemClock.elapsedRealtime() - berzerkStart > berzerkLength)
+	    if(berzerk && nt - berzerkStart > berzerkLength)
 		berzerk = false;
 
 	    if (!over) {
@@ -330,7 +312,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms2.add(j);
-			    if (r.nextInt(30) == 1 )
+			    if (r.nextInt(30) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
@@ -340,7 +322,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms3.add(j);
-			    if (r.nextInt(30) == 1 )
+			    if (r.nextInt(30) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
@@ -349,7 +331,7 @@ public class MaruVortex extends Activity {
 			if (sq(i.getx() - j.getx()) + sq(i.gety() - j.gety()) <= sq(i.getRadius() + j.getRadius())) {
 			    rms.add(i);
 			    rms4.add(j);
-			    if (r.nextInt(30) == 1 )
+			    if (r.nextInt(30) == 0)
 				berzerkUps.add(new BerzerkUp(j.getx(), j.gety()));
 			    score++;
 			}
@@ -362,17 +344,18 @@ public class MaruVortex extends Activity {
 		//end Enemy collision with bullets
 		//Enemy collision with character
 		for (BoxParticle j : squares)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()) && !berzerk)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
 			over = true;
 
 		for (ParabolicParticle j : parabolics)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()) && !berzerk)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
 			over = true;
 
 		for (TurningParticle j : turns)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()) && !berzerk)
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
 			over = true;
 		//end Enemy collision with character
+		if (berzerk) over = false; // one cannot die in berzerk mode
 		if (over) {
 		    berzerk = false;
 		    stop();
@@ -380,7 +363,7 @@ public class MaruVortex extends Activity {
 		//Berzerk powerup collision
 		if (!berzerk){
 		    for (BerzerkUp i : berzerkUps)
-			if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())){
+			if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())) {
 			    berzerk = true;
 			    berzerkStart = SystemClock.elapsedRealtime();
 			    rms5.add(i);
@@ -407,23 +390,20 @@ public class MaruVortex extends Activity {
 		//Rendering particles
 		for (BoxParticle i : squares) {
 		    i.update(((double) (nt - t)) / 1000);
-		    matrix.setRotate(i.getAngle(), squareW / 2, squareH / 2);
-		    matrix.postTranslate(i.getx() - squareW / 2, i.gety() - squareH
-			    / 2);
+		    matrix.setRotate(i.getAngle(), squareW/2, squareH/2);
+		    matrix.postTranslate(i.getx() - squareW/2, i.gety() - squareH / 2);
 		    canvas.drawBitmap(squareBitmap, matrix, bitmapPaint);
 		}
 		for (ParabolicParticle i : parabolics) {
 		    i.update(((double) (nt - t)) / 1000);
 		    matrix.setRotate(i.getAngle(), parabolicW / 2, parabolicH / 2);
-		    matrix.postTranslate(i.getx() - parabolicW / 2, i.gety()
-			    - parabolicH / 2);
+		    matrix.postTranslate(i.getx() - parabolicW / 2, i.gety() - parabolicH / 2);
 		    canvas.drawBitmap(parabolicBitmap, matrix, bitmapPaint);
 		}
 		for (TurningParticle i : turns) {
 		    i.update(((double) (nt - t)) / 1000);
 		    matrix.setRotate(i.getAngle(), turningW / 2, turningH / 2);
-		    matrix.postTranslate(i.getx() - turningW / 2, i.gety()
-			    - turningH / 2);
+		    matrix.postTranslate(i.getx() - turningW / 2, i.gety() - turningH / 2);
 		    canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
 		}
 
@@ -431,13 +411,11 @@ public class MaruVortex extends Activity {
 		    i.update(((double) (nt - t)) / 1000);
 
 		    matrix.setRotate(i.getAngle(), bulletW / 2, bulletH / 2);
-		    matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH
-			    / 2);
+		    matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH / 2);
 		    canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
 		}
 		for (BerzerkUp i : berzerkUps) {
-		    matrix.postTranslate(i.getx() - berzerkW / 2, i.gety() - berzerkH
-			    / 2);
+		    matrix.postTranslate(i.getx() - berzerkW / 2, i.gety() - berzerkH / 2);
 		    canvas.drawBitmap(berzerkBitmap, matrix, bitmapPaint);
 		}
 
@@ -459,8 +437,7 @@ public class MaruVortex extends Activity {
 	    if (over) {
 		canvas.drawText(OVER_STR, (screenW-largeTextPaint.measureText(OVER_STR))/2, screenH/2-12, largeTextPaint);
 		canvas.drawText(OVER_STR_2, (screenW-largeTextPaint.measureText(OVER_STR_2))/2, screenH/2+16, largeTextPaint);
-	    }
-	    if (berzerk)
+	    } else if (berzerk)
 		canvas.drawText(BERZERK_STR, (screenW-redTextPaint.measureText(BERZERK_STR))/2, 25, redTextPaint);
 	    //end Text rendering 
 	    t = nt;
@@ -468,7 +445,7 @@ public class MaruVortex extends Activity {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-	    if (over && event.getAction() == MotionEvent.ACTION_DOWN) {
+	    if (over && event.getAction() == MotionEvent.ACTION_DOWN) { // restart game
 		mc = null;
 		level = 1;
 		score = 0;
@@ -477,12 +454,12 @@ public class MaruVortex extends Activity {
 		bullets.clear();
 		parabolics.clear();
 		turns.clear();
-		over = false;
+		firing = over = false;
 		start();
 	    } else {
 		_x = (int) event.getX();
 		_y = (int) event.getY();
-		if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+		if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) { // fire bullet
 		    if (!firing) g = -1000;
 		    firing = true;
 		} else firing = false;
