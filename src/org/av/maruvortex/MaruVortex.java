@@ -244,7 +244,7 @@ public class MaruVortex extends Activity {
 	}
 
 	@Override
-	public void onDraw(Canvas canvas) {
+	public synchronized void onDraw(Canvas canvas) {
 	    long nt = SystemClock.elapsedRealtime();
 	    if (canvas == null) return;
 	    if (t < 0) t = nt;
@@ -463,7 +463,7 @@ public class MaruVortex extends Activity {
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public synchronized boolean onTouchEvent(MotionEvent event) {
 	    if (over && event.getAction() == MotionEvent.ACTION_DOWN) { // restart game
 		mc = null;
 		level = 1;
