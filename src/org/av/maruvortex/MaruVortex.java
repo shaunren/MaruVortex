@@ -434,7 +434,7 @@ public class MaruVortex extends Activity {
 		    matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH / 2);
 		    canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
 		}
-		for (BerzerkUp i : berzerkUps) {;
+		for (BerzerkUp i : berzerkUps) {
 		    canvas.drawBitmap(berzerkBitmap, i.getx() - berzerkW / 2, i.gety() - berzerkH / 2, bitmapPaint);
 		}
 
