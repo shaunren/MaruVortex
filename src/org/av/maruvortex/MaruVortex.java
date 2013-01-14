@@ -1,5 +1,7 @@
 package org.av.maruvortex;
 
+import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 
@@ -30,6 +32,7 @@ import android.view.WindowManager;
 public class MaruVortex extends Activity {
     SensorManager mSensorManager;
     Panel _p;
+    BackgroundSound mBackgroundSound = new BackgroundSound();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +55,26 @@ public class MaruVortex extends Activity {
     protected void onPause() {
         super.onPause();
         _p.stop();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mBackgroundSound.cancel(true);
+    }
+    
+    class BackgroundSound extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            MediaPlayer player = MediaPlayer.create(MaruVortex.this, R.raw.bg); 
+            player.setLooping(true); // Set looping 
+            player.setVolume(100,100); 
+            player.start(); 
+
+            return null;
+        }
+
     }
 
     class Panel extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
@@ -215,10 +238,12 @@ public class MaruVortex extends Activity {
             for (int i=0;i<3;i++)
                 accelValues[i] = compassValues[i] = 0;
             sensorsReady = false;
+            mBackgroundSound.execute((Void)null);
         }
 
         public void stop() {
             mSensorManager.unregisterListener(this);
+            mBackgroundSound.cancel(true);
         }
 
         @Override
