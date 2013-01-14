@@ -1,7 +1,6 @@
 package org.av.maruvortex;
 
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 
@@ -31,13 +30,16 @@ import android.view.WindowManager;
 
 public class MaruVortex extends Activity {
     SensorManager mSensorManager;
+    MediaPlayer mediaPlayer;
     Panel _p;
-    BackgroundSound mBackgroundSound = new BackgroundSound();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mediaPlayer = MediaPlayer.create(MaruVortex.this, R.raw.bg); 
+        mediaPlayer.setLooping(true); // Set looping 
+        mediaPlayer.setVolume(100,100);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -60,21 +62,7 @@ public class MaruVortex extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mBackgroundSound.cancel(true);
-    }
-    
-    class BackgroundSound extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            MediaPlayer player = MediaPlayer.create(MaruVortex.this, R.raw.bg); 
-            player.setLooping(true); // Set looping 
-            player.setVolume(100,100); 
-            player.start(); 
-
-            return null;
-        }
-
+        mediaPlayer.stop();
     }
 
     class Panel extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
@@ -89,7 +77,7 @@ public class MaruVortex extends Activity {
         private static final String BERZERK_STR = "BERZERK MODE ACTIVATED";
         private Random r = new Random();
         private volatile long berzerkStart;
-        private int berzerkLength = 5000;
+        private static final int berzerkLength = 10000;
         private volatile boolean berzerk = false;
 
         // SENSOR VARs
@@ -156,7 +144,7 @@ public class MaruVortex extends Activity {
         private Bitmap berzerkBitmap = BitmapFactory.decodeResource(getResources(),
                 R.drawable.berzerk);
         private int bulletW, bulletH, squareW, squareH, parabolicW, parabolicH,
-        turningW, turningH, homingW, homingH, berzerkW, berzerkH;
+        turningW, turningH, homingW, homingH, berzerkW, berzerkH, mcW, mcH;
         private int screenW, screenH;
 
         // DEBUG TAGS
@@ -203,6 +191,8 @@ public class MaruVortex extends Activity {
             homingH = homingBitmap.getHeight();
             berzerkW = berzerkBitmap.getWidth();
             berzerkH = berzerkBitmap.getHeight();
+            mcW = mcBitmap.getWidth();
+            mcH = mcBitmap.getHeight();
         }
 
         @Override
@@ -238,12 +228,12 @@ public class MaruVortex extends Activity {
             for (int i=0;i<3;i++)
                 accelValues[i] = compassValues[i] = 0;
             sensorsReady = false;
-            mBackgroundSound.execute((Void)null);
+            mediaPlayer.start();
         }
 
         public void stop() {
             mSensorManager.unregisterListener(this);
-            mBackgroundSound.cancel(true);
+            mediaPlayer.pause();
         }
 
         @Override
@@ -485,7 +475,6 @@ public class MaruVortex extends Activity {
                     canvas.drawBitmap(turningBitmap, matrix, bitmapPaint);
                 }
                 for (HomingParticle i : homings) {
-                    Log.d(LOG_TAG, "av");
                     i.update(((double) (nt - t)) / 1000);
                     matrix.setRotate(i.getAngle(), homingW / 2, homingH / 2);
                     matrix.postTranslate(i.getx() - homingW / 2, i.gety() - homingH / 2);
@@ -506,11 +495,13 @@ public class MaruVortex extends Activity {
                 for (HomingParticle i : homings) {
                     i.updateMC(mc.getx(), mc.gety());
                 }
-                canvas.drawBitmap(mcBitmap, mc.getx() - mcBitmap.getWidth() / 2, mc.gety()
-                        - mcBitmap.getHeight() / 2, bitmapPaint);
+                
+                matrix.setRotate(mc.getAngle(), mcW / 2, mcH / 2);
+                matrix.postTranslate(mc.getx() - mcW / 2, mc.gety() - mcH / 2);
+                canvas.drawBitmap(mcBitmap, matrix, bitmapPaint);
                 //end Rendering particles
                 //leveling
-                if (score >= 100)
+                if (score >= 50)
                     level = 3;
                 else if (score >= 25) 
                     level = 2;
@@ -523,8 +514,13 @@ public class MaruVortex extends Activity {
             if (over) {
                 canvas.drawText(OVER_STR, (screenW-largeTextPaint.measureText(OVER_STR))/2, screenH/2-12, largeTextPaint);
                 canvas.drawText(OVER_STR_2, (screenW-largeTextPaint.measureText(OVER_STR_2))/2, screenH/2+16, largeTextPaint);
-            } else if (berzerk)
+            } else if (berzerk) {
                 canvas.drawText(BERZERK_STR, (screenW-redTextPaint.measureText(BERZERK_STR))/2, 25, redTextPaint);
+                String timeStr = String.format("%.1f seconds left", ((double)berzerkLength-nt+berzerkStart)/1000);
+                if (nt-berzerkStart < 8000 || ((nt-berzerkStart)/200)%2==0) {
+                    canvas.drawText(timeStr, (screenW-redTextPaint.measureText(timeStr))/2, 40, redTextPaint);
+                }
+            }
             //end Text rendering 
             t = nt;
         }
