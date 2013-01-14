@@ -236,7 +236,6 @@ public class MaruVortex extends Activity {
 	    }
 	    if (sensorsReady && SensorManager.getRotationMatrix(inR, inclineMatrix, accelValues, compassValues)) {
 		SensorManager.getOrientation(inR, prefValues);
-
 		pitch = (float) Math.toDegrees(prefValues[1]);
 		roll = (float) Math.toDegrees(prefValues[2]);
 		if (mc != null)
@@ -255,9 +254,8 @@ public class MaruVortex extends Activity {
 
 	    if(berzerk && nt - berzerkStart > berzerkLength)
 		berzerk = false;
-
+	    if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
 	    if (!over) {
-		if (mc == null) mc = new Character(screenW/2, screenH - 30, screenW, screenH);
 		//add Enemies
 		if (firing && nt - g >= 100) {
 		    bullets.add(new Bullet(_x, _y, mc.getx(), mc.gety(), screenH, screenW));
@@ -339,27 +337,51 @@ public class MaruVortex extends Activity {
 		parabolics.removeAll(rms3);
 		turns.removeAll(rms4);
 		bullets.removeAll(rms);
+		rms.clear();
+		rms2.clear();
+		rms3.clear();
+		rms4.clear();
 		//end Enemy collision with bullets
 		//Enemy collision with character
+		// one cannot die in berzerk mode
 		for (BoxParticle j : squares)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
-			over = true;
-
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius())) {
+			if (berzerk) {
+			    rms2.add(j);
+			    score++;
+			} else
+			    over = true;
+		    }
 		for (ParabolicParticle j : parabolics)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
-			over = true;
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius())) {
+			if (berzerk) {
+			    rms3.add(j);
+			    score++;
+			} else
+			    over = true;
+		    }
 
 		for (TurningParticle j : turns)
-		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius()))
-			over = true;
+		    if (sq(mc.getx() - j.getx()) + sq(mc.gety() - j.gety()) <= sq(mc.getRadius() + j.getRadius())) {
+			if (berzerk) {
+			    rms4.add(j);
+			    score++;
+			} else
+			    over = true;
+		    }
+		if (berzerk) {
+		    squares.removeAll(rms2);
+		    parabolics.removeAll(rms3);
+		    turns.removeAll(rms4);
+		    over = false;
+		}
 		//end Enemy collision with character
-		if (berzerk) over = false; // one cannot die in berzerk mode
 		if (over) {
 		    berzerk = false;
 		    stop();
 		}
 		//Berzerk powerup collision
-		if (!berzerk){
+		if (!berzerk) {
 		    for (BerzerkUp i : berzerkUps)
 			if (sq(mc.getx() - i.getx()) + sq(mc.gety() - i.gety()) <= sq(mc.getRadius() + i.getRadius())) {
 			    berzerk = true;
@@ -412,9 +434,8 @@ public class MaruVortex extends Activity {
 		    matrix.postTranslate(i.getx() - bulletW / 2, i.gety() - bulletH / 2);
 		    canvas.drawBitmap(bulletBitmap, matrix, bitmapPaint);
 		}
-		for (BerzerkUp i : berzerkUps) {
-		    matrix.postTranslate(i.getx() - berzerkW / 2, i.gety() - berzerkH / 2);
-		    canvas.drawBitmap(berzerkBitmap, matrix, bitmapPaint);
+		for (BerzerkUp i : berzerkUps) {;
+		    canvas.drawBitmap(berzerkBitmap, i.getx() - berzerkW / 2, i.gety() - berzerkH / 2, bitmapPaint);
 		}
 
 		mc.update(((double) (nt - t)) / 1000);
