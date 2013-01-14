@@ -50,14 +50,15 @@ class Character extends Particle {
 	radius = 10;
     }
     public void updateOrientation(double pitch, double roll) {
-	pitch /= -30;
-	roll = (-30-roll)/20;
+	double absp = Math.abs(pitch /= -30);
+	double absr = Math.abs(roll = (-30-roll)/20);
 	// non-linear response
-	if (Math.abs(pitch)<=1) dx = Math.signum(pitch)*Math.pow(Math.abs(pitch), 1.2)*w*0.8;
+	if (absp<=1) dx = Math.signum(pitch)*Math.pow(absp,1.2)*w*0.8;
 	if (Math.abs(dx) < 0.5) dx = 0;
-	if (Math.abs(roll)<=1) dy = Math.signum(roll)*Math.pow(Math.abs(roll), 1.2)*h*0.8;
+	if (absr<=1) dy = Math.signum(roll)*Math.pow(absr,1.2)*h*0.8;
 	if (Math.abs(dy) < 0.5) dy = 0;
     }
+    
     public void update(double dt) {
 	x += dx*dt;
 	y += dy*dt;
@@ -96,7 +97,7 @@ class Bullet extends Particle {
     }
 
 }
-class BoxParticle extends Particle{
+class BoxParticle extends Particle {
     Random r;
 
     private int dir; //0 for left right, 1 for down up, 2 for right left, 3 for up down
@@ -123,7 +124,7 @@ class BoxParticle extends Particle{
     }
 
 }
-class ParabolicParticle extends Particle{
+class ParabolicParticle extends Particle {
     int dir;
     public ParabolicParticle(Random r, int h, int l, int mcx, int mcy) {
 	c = 40;
@@ -143,7 +144,7 @@ class ParabolicParticle extends Particle{
 
 }
 
-class TurningParticle extends Particle{
+class TurningParticle extends Particle {
     int dir;
     int t;
     public TurningParticle(Random r, int h, int l, int mcx, int mcy) {
@@ -162,7 +163,7 @@ class TurningParticle extends Particle{
 
     }
     @Override
-    public void update(double dt){
+    public void update(double dt) {
 
 	if (dir == 1 || dir == 3)
 	    dx+=10*Math.sin(t/25);
