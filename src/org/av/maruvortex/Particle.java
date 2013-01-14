@@ -53,9 +53,9 @@ class Character extends Particle {
 	double absp = Math.abs(pitch /= -30);
 	double absr = Math.abs(roll = (-30-roll)/20);
 	// non-linear response
-	if (absp<=1) dx = Math.signum(pitch)*Math.pow(absp,1.2)*w*0.8;
+	if (absp<=1) dx = Math.signum(pitch)*Math.pow(absp,1.2)*w*0.7;
 	if (Math.abs(dx) < 2) dx = 0;
-	if (absr<=1) dy = Math.signum(roll)*Math.pow(absr,1.2)*h*0.8;
+	if (absr<=1) dy = Math.signum(roll)*Math.pow(absr,1.2)*h*0.7;
 	if (Math.abs(dy) < 2) dy = 0;
     }
     
